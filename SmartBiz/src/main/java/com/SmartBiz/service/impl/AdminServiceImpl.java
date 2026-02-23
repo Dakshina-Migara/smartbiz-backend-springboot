@@ -4,6 +4,7 @@ import com.SmartBiz.dto.*;
 import com.SmartBiz.entity.*;
 import com.SmartBiz.repository.*;
 import com.SmartBiz.service.AdminService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -16,6 +17,7 @@ public class AdminServiceImpl implements AdminService {
     private final AiRequestRepository aiRequestRepository;
     private final SubscriptionPlanRepository subscriptionPlanRepository;
 
+    @Autowired
     public AdminServiceImpl(BusinessRepository businessRepository, AiRequestRepository aiRequestRepository, SubscriptionPlanRepository subscriptionPlanRepository) {
         this.businessRepository = businessRepository;
         this.aiRequestRepository = aiRequestRepository;

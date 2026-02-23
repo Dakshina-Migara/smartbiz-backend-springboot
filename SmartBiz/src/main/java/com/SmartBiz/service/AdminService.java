@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface AdminService {
+
     List<BusinessesDto> findAllBusinesses();
 
     SubscriptionPlanDto updateSubscriptionPlan(Long id, SubscriptionPlanDto subscriptionPlanDto);

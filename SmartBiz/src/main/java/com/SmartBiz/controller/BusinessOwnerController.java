@@ -4,45 +4,51 @@ import com.SmartBiz.dto.InventoryDto;
 import com.SmartBiz.dto.SalesDto;
 import com.SmartBiz.service.BusinessOwnerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/owner")
+@RequestMapping("/api/v1/business")
 public class BusinessOwnerController {
 
-    private final BusinessOwnerService businessOwnerService;
+    private final BusinessOwnerService service;
 
     @Autowired
-    public BusinessOwnerController(BusinessOwnerService businessOwnerService) {
-        this.businessOwnerService = businessOwnerService;
+    public BusinessOwnerController(BusinessOwnerService service) {
+        this.service = service;
     }
 
     @PostMapping("/inventory")
-    public ResponseEntity<InventoryDto> addProduct(@RequestBody InventoryDto dto) {
-        InventoryDto saved = businessOwnerService.addInventory(dto);
-        return ResponseEntity.ok(saved);
+    public InventoryDto addInventory(@RequestBody InventoryDto dto) {
+        return service.addInventory(dto);
     }
 
-    @GetMapping("/inventory")
-    public ResponseEntity<List<InventoryDto>> getInventory(@RequestParam Long business_id) {
-        List<InventoryDto> inventory = businessOwnerService.getAllInventory(business_id);
-        return ResponseEntity.ok(inventory);
+    @GetMapping("/{businessId}/inventory")
+    public List<InventoryDto> getAllInventory(@PathVariable Long businessId) {
+        return service.getAllInventory(businessId);
+    }
+
+    @PutMapping("/{businessId}/inventory/{productId}")
+    public InventoryDto updateStock(@PathVariable Long businessId,
+                                    @PathVariable Long productId,
+                                    @RequestParam Integer quantity) {
+        return service.updateStock(productId, quantity, businessId);
     }
 
     @PostMapping("/sales")
-    public ResponseEntity<SalesDto> recordSale(@RequestBody SalesDto dto) {
-        SalesDto savedSale = businessOwnerService.recordSale(dto);
-        return ResponseEntity.ok(savedSale);
+    public SalesDto recordSale(@RequestBody SalesDto dto) {
+        return service.recordSale(dto);
     }
 
-    @PostMapping("/ai/insight")
-    public ResponseEntity<String> getAiInsight(
-            @RequestParam Long business_id,
-            @RequestBody String prompt) {
-        String insight = businessOwnerService.generateAiInsight(business_id, prompt);
-        return ResponseEntity.ok(insight);
+    @GetMapping("/{businessId}/sales")
+    public List<SalesDto> getSalesHistory(@PathVariable Long businessId) {
+        return service.getSalesHistory(businessId);
+    }
+
+    @PostMapping("/{businessId}/ai-insight")
+    public String generateAiInsight(@PathVariable Long businessId,
+                                    @RequestBody String prompt) {
+        return service.generateAiInsight(businessId, prompt);
     }
 }

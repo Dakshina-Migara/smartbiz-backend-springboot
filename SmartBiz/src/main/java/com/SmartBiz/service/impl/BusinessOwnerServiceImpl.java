@@ -9,6 +9,7 @@ import com.SmartBiz.repository.BusinessRepository;
 import com.SmartBiz.repository.InventoryRepository;
 import com.SmartBiz.repository.SalesRepository;
 import com.SmartBiz.service.BusinessOwnerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     private final SalesRepository salesRepository;
     private final BusinessRepository businessRepository;
 
+    @Autowired
     public BusinessOwnerServiceImpl(InventoryRepository inventoryRepository,
                                     SalesRepository salesRepository,
                                     BusinessRepository businessRepository) {
@@ -33,40 +35,44 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     @Override
     public InventoryDto addInventory(InventoryDto dto) {
         Businesses business = businessRepository.findById(dto.getBusiness_id())
-                .orElseThrow(() -> new RuntimeException("Business not found"));
+                .orElseThrow(() -> new RuntimeException("Business not found with id: " + dto.getBusiness_id()));
 
-        Inventory inv = new Inventory();
-        inv.setProductName(dto.getProductName());
-        inv.setStockLevel(dto.getStockLevel());
-        inv.setPrice(dto.getPrice());
-        inv.setBusiness(business);
+        Inventory inventory = new Inventory();
+        inventory.setProductName(dto.getProductName());
+        inventory.setStockLevel(dto.getStockLevel());
+        inventory.setPrice(dto.getPrice());
+        inventory.setBusiness(business);
 
-        Inventory saved = inventoryRepository.save(inv);
+        Inventory saved = inventoryRepository.save(inventory);
         return mapToInventoryDto(saved);
     }
 
     @Override
-    public List<InventoryDto> getAllInventory(Long business_id) {
-        return inventoryRepository.findByBusinessId(business_id)
-                .stream().map(this::mapToInventoryDto).collect(Collectors.toList());
+    public List<InventoryDto> getAllInventory(Long businessId) {
+        return inventoryRepository.findByBusinessId(businessId)
+                .stream()
+                .map(this::mapToInventoryDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public InventoryDto updateStock(Long productId, Integer quantity, Long business_id) {
-        Inventory inv = inventoryRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Inventory not found"));
+    public InventoryDto updateStock(Long productId, Integer quantity, Long businessId) {
+        Inventory inventory = inventoryRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Inventory not found with id: " + productId));
 
-        if (!inv.getBusiness().getBusiness_id().equals(business_id))
-            throw new RuntimeException("Unauthorized");
+        if (!inventory.getBusiness().getBusiness_id().equals(businessId)) {
+            throw new RuntimeException("Unauthorized: Business mismatch");
+        }
 
-        inv.setStockLevel(quantity);
-        return mapToInventoryDto(inventoryRepository.save(inv));
+        inventory.setStockLevel(quantity);
+        Inventory updated = inventoryRepository.save(inventory);
+        return mapToInventoryDto(updated);
     }
 
     @Override
     public SalesDto recordSale(SalesDto dto) {
         Businesses business = businessRepository.findById(dto.getBusiness_id())
-                .orElseThrow(() -> new RuntimeException("Business not found"));
+                .orElseThrow(() -> new RuntimeException("Business not found with id: " + dto.getBusiness_id()));
 
         Sales sale = new Sales();
         sale.setTotalAmount(dto.getTotalAmount());
@@ -74,31 +80,43 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         sale.setSaleDate(dto.getSaleDate() != null ? dto.getSaleDate() : LocalDateTime.now());
         sale.setBusiness(business);
 
-        return mapToSalesDto(salesRepository.save(sale));
+        Sales savedSale = salesRepository.save(sale);
+        return mapToSalesDto(savedSale);
     }
 
     @Override
-    public List<SalesDto> getSalesHistory(Long business_id) {
-        return salesRepository.findByBusinessIdOrderBySaleDateDesc(business_id)
-                .stream().map(this::mapToSalesDto).collect(Collectors.toList());
+    public List<SalesDto> getSalesHistory(Long businessId) {
+        return salesRepository.findByBusinessIdOrderBySaleDateDesc(businessId)
+                .stream()
+                .map(this::mapToSalesDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public String generateAiInsight(Long business_id, String prompt) {
-        List<Inventory> inventory = inventoryRepository.findByBusinessId(business_id);
-        long lowStockCount = inventory.stream().filter(i -> i.getStockLevel() < 5).count();
+    public String generateAiInsight(Long businessId, String prompt) {
+        List<Inventory> inventoryList = inventoryRepository.findByBusinessId(businessId);
+        long lowStockCount = inventoryList.stream().filter(i -> i.getStockLevel() < 5).count();
 
         return "AI Insight: You have " + lowStockCount + " products with low stock. Prompt: " + prompt;
     }
 
-    // --- Helpers ---
-    private InventoryDto mapToInventoryDto(Inventory inv) {
-        return new InventoryDto(inv.getProductId(), inv.getProductName(), inv.getStockLevel(),
-                inv.getPrice(), inv.getBusiness().getBusiness_id());
+    private InventoryDto mapToInventoryDto(Inventory inventory) {
+        return new InventoryDto(
+                inventory.getProductId(),
+                inventory.getProductName(),
+                inventory.getStockLevel(),
+                inventory.getPrice(),
+                inventory.getBusiness().getBusiness_id()
+        );
     }
 
-    private SalesDto mapToSalesDto(Sales s) {
-        return new SalesDto(s.getSaleId(), s.getTotalAmount(), s.getItemsCount(),
-                s.getSaleDate(), s.getBusiness().getBusiness_id());
+    private SalesDto mapToSalesDto(Sales sale) {
+        return new SalesDto(
+                sale.getSaleId(),
+                sale.getTotalAmount(),
+                sale.getItemsCount(),
+                sale.getSaleDate(),
+                sale.getBusiness().getBusiness_id()
+        );
     }
 }
