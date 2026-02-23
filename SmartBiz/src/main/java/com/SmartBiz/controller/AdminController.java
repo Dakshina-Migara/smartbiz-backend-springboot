@@ -4,7 +4,6 @@ import com.SmartBiz.dto.AIRequestDto;
 import com.SmartBiz.dto.BusinessesDto;
 import com.SmartBiz.dto.SubscriptionPlanDto;
 import com.SmartBiz.service.AdminService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,38 +23,37 @@ public class AdminController {
         this.adminService = adminService;
     }
 
+    // 1. Get all registered businesses
     @GetMapping("/businesses")
     public ResponseEntity<List<BusinessesDto>> getAllBusinesses() {
+
         List<BusinessesDto> businesses = adminService.findAllBusinesses();
-        return ResponseEntity.ok(businesses);
+        return new ResponseEntity<>(businesses, HttpStatus.OK);
     }
 
+    // 2. View system-wide AI usage logs
     @GetMapping("/logs/ai")
     public ResponseEntity<List<AIRequestDto>> getAiUsageLogs() {
+
         List<AIRequestDto> logs = adminService.getGlobalAiLogs();
-        return ResponseEntity.ok(logs);
+        return new ResponseEntity<>(logs, HttpStatus.OK);
     }
 
+    // 3. Update subscription plan
     @PutMapping("/subscriptions/{id}")
     public ResponseEntity<SubscriptionPlanDto> updatePlan(
             @PathVariable Long id,
-            @Valid @RequestBody SubscriptionPlanDto planDto) {
+            @RequestBody SubscriptionPlanDto planDto) {
 
         SubscriptionPlanDto updatedPlan = adminService.updateSubscriptionPlan(id, planDto);
-        return ResponseEntity.ok(updatedPlan);
+        return new ResponseEntity<>(updatedPlan, HttpStatus.OK);
     }
 
-    @PostMapping("/subscriptions/create")
-    public ResponseEntity<SubscriptionPlanDto> createPlan(
-            @Valid @RequestBody SubscriptionPlanDto planDto) {
-
-        SubscriptionPlanDto createdPlan = adminService.createSubscriptionPlan(planDto);
-        return new ResponseEntity<>(createdPlan, HttpStatus.CREATED);
-    }
-
+    // 4. System-wide statistics (dashboard)
     @GetMapping("/statistics")
     public ResponseEntity<Map<String, Object>> getSystemStats() {
+
         Map<String, Object> statistics = adminService.getSystemWideStatus();
-        return ResponseEntity.ok(statistics);
+        return new ResponseEntity<>(statistics, HttpStatus.OK);
     }
 }
