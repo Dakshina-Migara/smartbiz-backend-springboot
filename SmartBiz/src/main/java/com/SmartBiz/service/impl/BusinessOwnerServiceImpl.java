@@ -5,9 +5,11 @@ import com.SmartBiz.dto.SalesDto;
 import com.SmartBiz.entity.Businesses;
 import com.SmartBiz.entity.Inventory;
 import com.SmartBiz.entity.Sales;
+import com.SmartBiz.entity.Supplier;
 import com.SmartBiz.repository.BusinessRepository;
 import com.SmartBiz.repository.InventoryRepository;
 import com.SmartBiz.repository.SalesRepository;
+import com.SmartBiz.repository.SupplierRepository;
 import com.SmartBiz.service.BusinessOwnerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,14 +30,17 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     private final InventoryRepository inventoryRepository;
     private final SalesRepository salesRepository;
     private final BusinessRepository businessRepository;
+    private final SupplierRepository supplierRepository;
 
     @Autowired
     public BusinessOwnerServiceImpl(InventoryRepository inventoryRepository,
             SalesRepository salesRepository,
-            BusinessRepository businessRepository) {
+            BusinessRepository businessRepository,
+            SupplierRepository supplierRepository) {
         this.inventoryRepository = inventoryRepository;
         this.salesRepository = salesRepository;
         this.businessRepository = businessRepository;
+        this.supplierRepository = supplierRepository;
     }
 
     @Override
@@ -53,6 +58,12 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             inventory.setStockLevel(dto.getStockLevel());
             inventory.setMinStockLevel(dto.getMinStockLevel());
             inventory.setBusiness(business);
+
+            if (dto.getSupplierId() != null) {
+                Supplier supplier = supplierRepository.findById(dto.getSupplierId())
+                        .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + dto.getSupplierId()));
+                inventory.setSupplier(supplier);
+            }
 
             Inventory saved = inventoryRepository.save(inventory);
             log.info("Added inventory product '{}' for business id: {}", dto.getProductName(), dto.getBusiness_id());
@@ -179,6 +190,14 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             inventory.setStockLevel(dto.getStockLevel());
             inventory.setMinStockLevel(dto.getMinStockLevel());
 
+            if (dto.getSupplierId() != null) {
+                Supplier supplier = supplierRepository.findById(dto.getSupplierId())
+                        .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + dto.getSupplierId()));
+                inventory.setSupplier(supplier);
+            } else {
+                inventory.setSupplier(null);
+            }
+
             Inventory updated = inventoryRepository.save(inventory);
             log.info("Updated product id: {} for business id: {}", productId, businessId);
             return mapToInventoryDto(updated);
@@ -282,6 +301,11 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         dto.setStockLevel(inventory.getStockLevel());
         dto.setMinStockLevel(inventory.getMinStockLevel());
         dto.setBusiness_id(inventory.getBusiness().getBusiness_id());
+
+        if (inventory.getSupplier() != null) {
+            dto.setSupplierId(inventory.getSupplier().getSupplierId());
+            dto.setSupplierName(inventory.getSupplier().getName());
+        }
 
         if (inventory.getPrice() != null && inventory.getStockLevel() != null) {
             dto.setStockValue(inventory.getPrice() * inventory.getStockLevel());

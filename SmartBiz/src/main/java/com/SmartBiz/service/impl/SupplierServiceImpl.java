@@ -66,6 +66,18 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<SupplierDto> searchSuppliers(Long businessId, String query) {
+        try {
+            return supplierRepository.searchByBusinessId(businessId, query)
+                    .stream().map(this::mapToDto).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error searching suppliers for business id {}: {}", businessId, e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
     public SupplierDto updateSupplier(Long businessId, Long supplierId, SupplierDto dto) {
         try {
             Supplier supplier = supplierRepository.findById(supplierId)

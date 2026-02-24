@@ -26,10 +26,4 @@ public class Sales {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_id")
     private Businesses business;
-
-    public Sales(Double totalAmount, Integer itemsCount, LocalDateTime saleDate) {
-        this.totalAmount = totalAmount;
-        this.itemsCount = itemsCount;
-        this.saleDate = saleDate;
-    }
 }

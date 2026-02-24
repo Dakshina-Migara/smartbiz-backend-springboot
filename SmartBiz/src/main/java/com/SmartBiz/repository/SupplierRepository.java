@@ -13,4 +13,10 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
 
     @Query("SELECT s FROM Supplier s WHERE s.business.business_id = :businessId")
     List<Supplier> findByBusinessId(@Param("businessId") Long businessId);
+
+    @Query("SELECT s FROM Supplier s WHERE s.business.business_id = :businessId " +
+            "AND (LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "OR LOWER(s.company) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "OR LOWER(s.email) LIKE LOWER(CONCAT('%', :query, '%')))")
+    List<Supplier> searchByBusinessId(@Param("businessId") Long businessId, @Param("query") String query);
 }

@@ -32,6 +32,12 @@ public class SupplierController {
         return ResponseEntity.ok(supplierService.getAllSuppliers(businessId));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<SupplierDto>> searchSuppliers(@PathVariable Long businessId,
+            @RequestParam String q) {
+        return ResponseEntity.ok(supplierService.searchSuppliers(businessId, q));
+    }
+
     @PutMapping("/{supplierId}")
     public ResponseEntity<SupplierDto> updateSupplier(@PathVariable Long businessId,
             @PathVariable Long supplierId,
