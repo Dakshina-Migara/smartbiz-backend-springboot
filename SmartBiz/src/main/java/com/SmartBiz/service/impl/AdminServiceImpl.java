@@ -107,9 +107,70 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getDashboardStats() {
+        try {
+            Map<String, Object> stats = new LinkedHashMap<>();
+
+            stats.put("totalBusinesses", businessRepository.count());
+            Long activeCount = businessRepository.countByStatus("active");
+            stats.put("activeBusinesses", activeCount != null ? activeCount : 0);
+
+            Long totalSubscribers = businessRepository.countBySubscriptionIsNotNull();
+            stats.put("totalSubscribers", totalSubscribers != null ? totalSubscribers : 0);
+
+            Long tokensThisMonth = aiRequestRepository.sumTokensThisMonth();
+            stats.put("totalTokensThisMonth", tokensThisMonth != null ? tokensThisMonth : 0);
+
+            List<Object[]> planStats = businessRepository.countAndRevenueByPlan();
+            List<Map<String, Object>> revenueByPlan = new ArrayList<>();
+            List<Map<String, Object>> subscribersByPlan = new ArrayList<>();
+            double monthlyRevenue = 0;
+
+            for (Object[] row : planStats) {
+                String planName = (String) row[0];
+                Long count = (Long) row[1];
+                Double revenue = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+
+                Map<String, Object> revenueEntry = new LinkedHashMap<>();
+                revenueEntry.put("planName", planName);
+                revenueEntry.put("revenue", revenue);
+                revenueByPlan.add(revenueEntry);
+
+                Map<String, Object> subscriberEntry = new LinkedHashMap<>();
+                subscriberEntry.put("planName", planName);
+                subscriberEntry.put("count", count);
+                subscribersByPlan.add(subscriberEntry);
+
+                monthlyRevenue += revenue;
+            }
+
+            stats.put("monthlyRevenue", monthlyRevenue);
+            stats.put("revenueByPlan", revenueByPlan);
+            stats.put("subscribersByPlan", subscribersByPlan);
+
+            List<Object[]> dailyTokens = aiRequestRepository.dailyTokenUsageLast30Days();
+            List<Map<String, Object>> dailyAiTokenUsage = new ArrayList<>();
+            for (Object[] row : dailyTokens) {
+                Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("date", row[0] != null ? row[0].toString() : null);
+                entry.put("tokens", row[1] != null ? ((Number) row[1]).longValue() : 0);
+                dailyAiTokenUsage.add(entry);
+            }
+            stats.put("dailyAiTokenUsage", dailyAiTokenUsage);
+
+            return stats;
+        } catch (Exception e) {
+            log.error("Error fetching dashboard stats: {}", e.getMessage(), e);
+            return Collections.emptyMap();
+        }
+    }
+
     private BusinessesDto mapToBusinessDto(Businesses b) {
         BusinessesDto dto = new BusinessesDto();
         dto.setBusiness_id(b.getBusiness_id());
+        dto.setBusinessOwnerName(b.getBusinessOwnerName());
         dto.setName(b.getName());
         dto.setAddress(b.getAddress());
         dto.setEmail(b.getEmail());

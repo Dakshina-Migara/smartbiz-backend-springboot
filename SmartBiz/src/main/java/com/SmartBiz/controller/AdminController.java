@@ -58,4 +58,10 @@ public class AdminController {
         Map<String, Object> statistics = adminService.getSystemWideStatus();
         return ResponseEntity.ok(statistics);
     }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<Map<String, Object>> getDashboardStats() {
+        Map<String, Object> dashboard = adminService.getDashboardStats();
+        return ResponseEntity.ok(dashboard);
+    }
 }

@@ -18,4 +18,6 @@ public interface AdminService {
     List<AIRequestDto> getGlobalAiLogs();
 
     SubscriptionPlanDto createSubscriptionPlan(SubscriptionPlanDto planDto);
+
+    Map<String, Object> getDashboardStats();
 }

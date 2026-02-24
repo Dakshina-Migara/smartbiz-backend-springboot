@@ -15,6 +15,8 @@ public class Businesses {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long business_id;
 
+    private String businessOwnerName;
+
     private String name;
 
     private String address;

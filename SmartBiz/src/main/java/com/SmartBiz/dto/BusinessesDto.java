@@ -11,6 +11,8 @@ public class BusinessesDto {
 
     private Long business_id;
 
+    private String businessOwnerName;
+
     private String name;
 
     private String address;
