@@ -47,8 +47,12 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
             Inventory inventory = new Inventory();
             inventory.setProductName(dto.getProductName());
-            inventory.setStockLevel(dto.getStockLevel());
+            inventory.setSku(dto.getSku());
+            inventory.setCategory(dto.getCategory());
             inventory.setPrice(dto.getPrice());
+            inventory.setCost(dto.getCost());
+            inventory.setStockLevel(dto.getStockLevel());
+            inventory.setMinStockLevel(dto.getMinStockLevel());
             inventory.setBusiness(business);
 
             Inventory saved = inventoryRepository.save(inventory);
@@ -75,6 +79,20 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<InventoryDto> searchInventory(Long businessId, String query) {
+        try {
+            return inventoryRepository.searchByBusinessId(businessId, query)
+                    .stream()
+                    .map(this::mapToInventoryDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error searching inventory for business id {}: {}", businessId, e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
     public InventoryDto updateStock(Long productId, Integer quantity, Long businessId) {
         try {
             Inventory inventory = inventoryRepository.findById(productId)
@@ -91,6 +109,33 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         } catch (Exception e) {
             log.error("Error updating stock for product id {}: {}", productId, e.getMessage(), e);
             throw new RuntimeException("Failed to update stock: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public InventoryDto updateProduct(Long productId, InventoryDto dto, Long businessId) {
+        try {
+            Inventory inventory = inventoryRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
+
+            if (!inventory.getBusiness().getBusiness_id().equals(businessId)) {
+                throw new RuntimeException("Unauthorized: Business mismatch");
+            }
+
+            inventory.setProductName(dto.getProductName());
+            inventory.setSku(dto.getSku());
+            inventory.setCategory(dto.getCategory());
+            inventory.setPrice(dto.getPrice());
+            inventory.setCost(dto.getCost());
+            inventory.setStockLevel(dto.getStockLevel());
+            inventory.setMinStockLevel(dto.getMinStockLevel());
+
+            Inventory updated = inventoryRepository.save(inventory);
+            log.info("Updated product id: {} for business id: {}", productId, businessId);
+            return mapToInventoryDto(updated);
+        } catch (Exception e) {
+            log.error("Error updating product id {}: {}", productId, e.getMessage(), e);
+            throw new RuntimeException("Failed to update product: " + e.getMessage());
         }
     }
 
@@ -161,12 +206,24 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     }
 
     private InventoryDto mapToInventoryDto(Inventory inventory) {
-        return new InventoryDto(
-                inventory.getProductId(),
-                inventory.getProductName(),
-                inventory.getStockLevel(),
-                inventory.getPrice(),
-                inventory.getBusiness().getBusiness_id());
+        InventoryDto dto = new InventoryDto();
+        dto.setProductId(inventory.getProductId());
+        dto.setProductName(inventory.getProductName());
+        dto.setSku(inventory.getSku());
+        dto.setCategory(inventory.getCategory());
+        dto.setPrice(inventory.getPrice());
+        dto.setCost(inventory.getCost());
+        dto.setStockLevel(inventory.getStockLevel());
+        dto.setMinStockLevel(inventory.getMinStockLevel());
+        dto.setBusiness_id(inventory.getBusiness().getBusiness_id());
+
+        if (inventory.getMinStockLevel() != null && inventory.getStockLevel() <= inventory.getMinStockLevel()) {
+            dto.setStockStatus("Low Stock");
+        } else {
+            dto.setStockStatus("In Stock");
+        }
+
+        return dto;
     }
 
     private SalesDto mapToSalesDto(Sales sale) {

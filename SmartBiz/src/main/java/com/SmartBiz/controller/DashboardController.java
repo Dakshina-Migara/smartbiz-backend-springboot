@@ -1,12 +1,14 @@
 package com.SmartBiz.controller;
 
+import com.SmartBiz.repository.CustomerRepository;
 import com.SmartBiz.repository.InventoryRepository;
+import com.SmartBiz.repository.PaymentRepository;
 import com.SmartBiz.repository.SalesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
@@ -15,30 +17,48 @@ public class DashboardController {
 
     private final SalesRepository salesRepository;
     private final InventoryRepository inventoryRepository;
+    private final CustomerRepository customerRepository;
+    private final PaymentRepository paymentRepository;
 
     @Autowired
-    public DashboardController(SalesRepository salesRepository, InventoryRepository inventoryRepository) {
+    public DashboardController(SalesRepository salesRepository, InventoryRepository inventoryRepository,
+            CustomerRepository customerRepository, PaymentRepository paymentRepository) {
         this.salesRepository = salesRepository;
         this.inventoryRepository = inventoryRepository;
+        this.customerRepository = customerRepository;
+        this.paymentRepository = paymentRepository;
     }
 
     @GetMapping("/kpis")
     public ResponseEntity<Map<String, Object>> getKPIs(@PathVariable Long businessId) {
-        Map<String, Object> kpis = new HashMap<>();
+        Map<String, Object> kpis = new LinkedHashMap<>();
 
         var sales = salesRepository.findByBusinessIdOrderBySaleDateDesc(businessId);
-        double totalSales = sales.stream()
+        double totalRevenue = sales.stream()
                 .mapToDouble(s -> s.getTotalAmount() != null ? s.getTotalAmount() : 0)
                 .sum();
-        kpis.put("totalSales", totalSales);
-        kpis.put("totalTransactions", sales.size());
+        kpis.put("totalRevenue", totalRevenue);
+        kpis.put("salesCount", sales.size());
+
+        Double totalExpenses = paymentRepository.sumAmountByBusinessId(businessId);
+        kpis.put("totalExpenses", totalExpenses);
+
+        double netProfit = totalRevenue - totalExpenses;
+        double margin = totalRevenue != 0 ? (netProfit / totalRevenue) * 100 : 0;
+        kpis.put("netProfit", netProfit);
+        kpis.put("profitMargin", Math.round(margin * 10.0) / 10.0);
+
+        Long lowStockAlerts = inventoryRepository.countLowStock(businessId);
+        kpis.put("lowStockAlerts", lowStockAlerts);
+
+        Long totalCustomers = customerRepository.countByBusinessId(businessId);
+        kpis.put("totalCustomers", totalCustomers);
+
+        Double inventoryValue = inventoryRepository.calculateInventoryValue(businessId);
+        kpis.put("inventoryValue", inventoryValue);
 
         var inventory = inventoryRepository.findByBusinessId(businessId);
         kpis.put("totalProducts", inventory.size());
-        long lowStock = inventory.stream()
-                .filter(i -> i.getStockLevel() != null && i.getStockLevel() < 5)
-                .count();
-        kpis.put("lowStockAlerts", lowStock);
 
         return ResponseEntity.ok(kpis);
     }

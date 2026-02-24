@@ -33,11 +33,24 @@ public class BusinessOwnerController {
         return ResponseEntity.ok(service.getAllInventory(businessId));
     }
 
+    @GetMapping("/{businessId}/inventory/search")
+    public ResponseEntity<List<InventoryDto>> searchInventory(@PathVariable Long businessId,
+            @RequestParam String q) {
+        return ResponseEntity.ok(service.searchInventory(businessId, q));
+    }
+
     @PutMapping("/{businessId}/inventory/{productId}")
     public ResponseEntity<InventoryDto> updateStock(@PathVariable Long businessId,
             @PathVariable Long productId,
             @RequestParam Integer quantity) {
         return ResponseEntity.ok(service.updateStock(productId, quantity, businessId));
+    }
+
+    @PutMapping("/{businessId}/inventory/{productId}/edit")
+    public ResponseEntity<InventoryDto> updateProduct(@PathVariable Long businessId,
+            @PathVariable Long productId,
+            @Valid @RequestBody InventoryDto dto) {
+        return ResponseEntity.ok(service.updateProduct(productId, dto, businessId));
     }
 
     @PostMapping("/sales")

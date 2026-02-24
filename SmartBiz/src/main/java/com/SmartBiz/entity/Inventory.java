@@ -17,9 +17,17 @@ public class Inventory {
 
     private String productName;
 
-    private Integer stockLevel;
+    private String sku;
+
+    private String category;
 
     private Double price;
+
+    private Double cost;
+
+    private Integer stockLevel;
+
+    private Integer minStockLevel;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_id")
