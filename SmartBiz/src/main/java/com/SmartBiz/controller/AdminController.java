@@ -30,6 +30,30 @@ public class AdminController {
         return ResponseEntity.ok(businesses);
     }
 
+    @GetMapping("/businesses/search")
+    public ResponseEntity<List<BusinessesDto>> searchBusinesses(@RequestParam String q) {
+        List<BusinessesDto> results = adminService.searchBusinesses(q);
+        return ResponseEntity.ok(results);
+    }
+
+    @PutMapping("/businesses/{id}/suspend")
+    public ResponseEntity<BusinessesDto> suspendBusiness(@PathVariable Long id) {
+        BusinessesDto suspended = adminService.suspendBusiness(id);
+        return ResponseEntity.ok(suspended);
+    }
+
+    @PutMapping("/businesses/{id}/activate")
+    public ResponseEntity<BusinessesDto> activateBusiness(@PathVariable Long id) {
+        BusinessesDto activated = adminService.activateBusiness(id);
+        return ResponseEntity.ok(activated);
+    }
+
+    @DeleteMapping("/businesses/{id}")
+    public ResponseEntity<Void> deleteBusiness(@PathVariable Long id) {
+        adminService.deleteBusiness(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/logs/ai")
     public ResponseEntity<List<AIRequestDto>> getAiUsageLogs() {
         List<AIRequestDto> logs = adminService.getGlobalAiLogs();

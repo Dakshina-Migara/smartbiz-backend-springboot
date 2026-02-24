@@ -43,6 +43,61 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<BusinessesDto> searchBusinesses(String query) {
+        try {
+            return businessRepository.searchBusinesses(query).stream()
+                    .map(this::mapToBusinessDto).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error searching businesses with query '{}': {}", query, e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public BusinessesDto suspendBusiness(Long businessId) {
+        try {
+            Businesses business = businessRepository.findById(businessId)
+                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+            business.setStatus("suspended");
+            Businesses updated = businessRepository.save(business);
+            log.info("Suspended business id: {}", businessId);
+            return mapToBusinessDto(updated);
+        } catch (Exception e) {
+            log.error("Error suspending business id {}: {}", businessId, e.getMessage(), e);
+            throw new RuntimeException("Failed to suspend business: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public BusinessesDto activateBusiness(Long businessId) {
+        try {
+            Businesses business = businessRepository.findById(businessId)
+                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+            business.setStatus("active");
+            Businesses updated = businessRepository.save(business);
+            log.info("Activated business id: {}", businessId);
+            return mapToBusinessDto(updated);
+        } catch (Exception e) {
+            log.error("Error activating business id {}: {}", businessId, e.getMessage(), e);
+            throw new RuntimeException("Failed to activate business: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void deleteBusiness(Long businessId) {
+        try {
+            Businesses business = businessRepository.findById(businessId)
+                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+            businessRepository.delete(business);
+            log.info("Deleted business id: {}", businessId);
+        } catch (Exception e) {
+            log.error("Error deleting business id {}: {}", businessId, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete business: " + e.getMessage());
+        }
+    }
+
+    @Override
     public SubscriptionPlanDto createSubscriptionPlan(SubscriptionPlanDto planDto) {
         try {
             SubscriptionPlan plan = new SubscriptionPlan();
@@ -175,6 +230,17 @@ public class AdminServiceImpl implements AdminService {
         dto.setAddress(b.getAddress());
         dto.setEmail(b.getEmail());
         dto.setPhone(b.getPhone());
+        dto.setStatus(b.getStatus());
+        dto.setRegisteredDate(b.getRegisteredDate());
+
+        if (b.getSubscription() != null) {
+            dto.setPlanName(b.getSubscription().getPlan_name());
+            dto.setRevenue(b.getSubscription().getPrice());
+        }
+
+        Long aiUsage = aiRequestRepository.sumTokensByBusinessId(b.getBusiness_id());
+        dto.setAiUsage(aiUsage != null ? aiUsage : 0L);
+
         return dto;
     }
 

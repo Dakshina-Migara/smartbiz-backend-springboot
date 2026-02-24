@@ -20,4 +20,12 @@ public interface AdminService {
     SubscriptionPlanDto createSubscriptionPlan(SubscriptionPlanDto planDto);
 
     Map<String, Object> getDashboardStats();
+
+    List<BusinessesDto> searchBusinesses(String query);
+
+    BusinessesDto suspendBusiness(Long businessId);
+
+    BusinessesDto activateBusiness(Long businessId);
+
+    void deleteBusiness(Long businessId);
 }
