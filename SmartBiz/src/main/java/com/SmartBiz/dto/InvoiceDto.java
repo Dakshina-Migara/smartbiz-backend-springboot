@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * InvoiceDto - Data Transfer Object for Invoice data.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

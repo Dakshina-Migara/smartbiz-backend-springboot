@@ -7,10 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * Invoice Entity - Represents an invoice generated from a sale.
- * Links a sale to customer details and tracks the invoice lifecycle.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

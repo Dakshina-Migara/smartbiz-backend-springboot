@@ -7,10 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * Customer Entity - Represents a customer of a business.
- * Each customer belongs to one business (Many customers → One business).
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
