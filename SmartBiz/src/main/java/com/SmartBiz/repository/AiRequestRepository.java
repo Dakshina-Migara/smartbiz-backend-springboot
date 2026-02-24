@@ -18,9 +18,9 @@ public interface AiRequestRepository extends JpaRepository<AiRequest, Long> {
                         "WHERE MONTH(a.createdAt) = MONTH(CURRENT_DATE) AND YEAR(a.createdAt) = YEAR(CURRENT_DATE)")
         Long sumTokensThisMonth();
 
-        @Query("SELECT CAST(a.createdAt AS DATE), SUM(a.tokenUsed) FROM AiRequest a " +
-                        "WHERE a.createdAt >= CURRENT_DATE - 30 " +
-                        "GROUP BY CAST(a.createdAt AS DATE) ORDER BY CAST(a.createdAt AS DATE)")
+        @Query(value = "SELECT DATE(created_at) AS log_date, SUM(token_used) AS total_tokens " +
+                        "FROM ai_request WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) " +
+                        "GROUP BY DATE(created_at) ORDER BY log_date", nativeQuery = true)
         List<Object[]> dailyTokenUsageLast30Days();
 
         @Query("SELECT SUM(a.tokenUsed) FROM AiRequest a WHERE a.business.business_id = :businessId")
