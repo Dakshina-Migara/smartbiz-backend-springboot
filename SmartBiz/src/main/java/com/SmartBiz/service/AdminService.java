@@ -1,6 +1,7 @@
 package com.SmartBiz.service;
 
 import com.SmartBiz.dto.AIRequestDto;
+import com.SmartBiz.dto.ActivityLogDto;
 import com.SmartBiz.dto.BusinessesDto;
 import com.SmartBiz.dto.SubscriptionPlanDto;
 
@@ -28,4 +29,6 @@ public interface AdminService {
     BusinessesDto activateBusiness(Long businessId);
 
     void deleteBusiness(Long businessId);
+
+    List<ActivityLogDto> getActivityLogs();
 }

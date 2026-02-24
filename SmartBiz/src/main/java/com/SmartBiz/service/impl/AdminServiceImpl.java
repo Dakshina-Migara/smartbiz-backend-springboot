@@ -22,13 +22,15 @@ public class AdminServiceImpl implements AdminService {
     private final BusinessRepository businessRepository;
     private final AiRequestRepository aiRequestRepository;
     private final SubscriptionPlanRepository subscriptionPlanRepository;
+    private final ActivityLogRepository activityLogRepository;
 
     @Autowired
     public AdminServiceImpl(BusinessRepository businessRepository, AiRequestRepository aiRequestRepository,
-            SubscriptionPlanRepository subscriptionPlanRepository) {
+            SubscriptionPlanRepository subscriptionPlanRepository, ActivityLogRepository activityLogRepository) {
         this.businessRepository = businessRepository;
         this.aiRequestRepository = aiRequestRepository;
         this.subscriptionPlanRepository = subscriptionPlanRepository;
+        this.activityLogRepository = activityLogRepository;
     }
 
     @Override
@@ -262,6 +264,31 @@ public class AdminServiceImpl implements AdminService {
         dto.setResponse(a.getResponse());
         dto.setTokenUsed(a.getTokenUsed());
         dto.setCreatedAt(a.getCreatedAt());
+        return dto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ActivityLogDto> getActivityLogs() {
+        try {
+            return activityLogRepository.findAllByOrderByTimestampDesc().stream()
+                    .map(this::mapToActivityLogDto).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching activity logs: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    private ActivityLogDto mapToActivityLogDto(ActivityLog log) {
+        ActivityLogDto dto = new ActivityLogDto();
+        dto.setLogId(log.getLogId());
+        dto.setTimestamp(log.getTimestamp());
+        dto.setFeature(log.getFeature());
+        dto.setAction(log.getAction());
+        dto.setAiTokens(log.getAiTokens());
+        if (log.getBusiness() != null) {
+            dto.setBusinessName(log.getBusiness().getName());
+        }
         return dto;
     }
 }

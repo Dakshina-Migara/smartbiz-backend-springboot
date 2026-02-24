@@ -1,6 +1,7 @@
 package com.SmartBiz.controller;
 
 import com.SmartBiz.dto.AIRequestDto;
+import com.SmartBiz.dto.ActivityLogDto;
 import com.SmartBiz.dto.BusinessesDto;
 import com.SmartBiz.dto.SubscriptionPlanDto;
 import com.SmartBiz.service.AdminService;
@@ -57,6 +58,12 @@ public class AdminController {
     @GetMapping("/logs/ai")
     public ResponseEntity<List<AIRequestDto>> getAiUsageLogs() {
         List<AIRequestDto> logs = adminService.getGlobalAiLogs();
+        return ResponseEntity.ok(logs);
+    }
+
+    @GetMapping("/logs/activity")
+    public ResponseEntity<List<ActivityLogDto>> getActivityLogs() {
+        List<ActivityLogDto> logs = adminService.getActivityLogs();
         return ResponseEntity.ok(logs);
     }
 
