@@ -107,6 +107,8 @@ public class AdminServiceImpl implements AdminService {
             plan.setPrice(planDto.getPrice());
             plan.setAi_token_limit(planDto.getAi_token_limit());
             plan.setMax_users(planDto.getMax_users());
+            plan.setBilling_cycle(planDto.getBilling_cycle());
+            plan.setFeatures(planDto.getFeatures());
 
             SubscriptionPlan saved = subscriptionPlanRepository.save(plan);
             log.info("Created subscription plan: {}", saved.getPlan_name());
@@ -127,6 +129,8 @@ public class AdminServiceImpl implements AdminService {
             plan.setPrice(planDto.getPrice());
             plan.setAi_token_limit(planDto.getAi_token_limit());
             plan.setMax_users(planDto.getMax_users());
+            plan.setBilling_cycle(planDto.getBilling_cycle());
+            plan.setFeatures(planDto.getFeatures());
 
             SubscriptionPlan updated = subscriptionPlanRepository.save(plan);
             log.info("Updated subscription plan id: {}", id);
@@ -253,7 +257,16 @@ public class AdminServiceImpl implements AdminService {
         dto.setPrice(s.getPrice());
         dto.setAi_token_limit(s.getAi_token_limit());
         dto.setMax_users(s.getMax_users());
+        dto.setBilling_cycle(s.getBilling_cycle());
+        dto.setFeatures(s.getFeatures());
         dto.setCreated_at(s.getCreated_at());
+
+        Long subscribers = subscriptionPlanRepository.countSubscribersByPlanId(s.getSubscription_id());
+        dto.setActiveSubscribers(subscribers != null ? subscribers : 0L);
+
+        Double revenue = subscriptionPlanRepository.calculateRevenueByPlanId(s.getSubscription_id());
+        dto.setMonthlyRevenue(revenue != null ? revenue : 0.0);
+
         return dto;
     }
 
@@ -276,6 +289,31 @@ public class AdminServiceImpl implements AdminService {
         } catch (Exception e) {
             log.error("Error fetching activity logs: {}", e.getMessage(), e);
             return Collections.emptyList();
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SubscriptionPlanDto> getAllSubscriptionPlans() {
+        try {
+            return subscriptionPlanRepository.findAll().stream()
+                    .map(this::mapToSubscriptionDto).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching subscription plans: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public void deleteSubscriptionPlan(Long id) {
+        try {
+            SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Subscription plan not found with id: " + id));
+            subscriptionPlanRepository.delete(plan);
+            log.info("Deleted subscription plan id: {}", id);
+        } catch (Exception e) {
+            log.error("Error deleting subscription plan id {}: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete subscription plan: " + e.getMessage());
         }
     }
 

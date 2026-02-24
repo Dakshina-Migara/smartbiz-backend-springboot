@@ -67,21 +67,31 @@ public class AdminController {
         return ResponseEntity.ok(logs);
     }
 
-    @PutMapping("/subscriptions/{id}")
-    public ResponseEntity<SubscriptionPlanDto> updatePlan(
-            @PathVariable Long id,
-            @Valid @RequestBody SubscriptionPlanDto planDto) {
-
-        SubscriptionPlanDto updatedPlan = adminService.updateSubscriptionPlan(id, planDto);
-        return ResponseEntity.ok(updatedPlan);
+    @GetMapping("/subscriptions")
+    public ResponseEntity<List<SubscriptionPlanDto>> getAllPlans() {
+        List<SubscriptionPlanDto> plans = adminService.getAllSubscriptionPlans();
+        return ResponseEntity.ok(plans);
     }
 
     @PostMapping("/subscriptions/create")
     public ResponseEntity<SubscriptionPlanDto> createPlan(
             @Valid @RequestBody SubscriptionPlanDto planDto) {
-
         SubscriptionPlanDto createdPlan = adminService.createSubscriptionPlan(planDto);
         return new ResponseEntity<>(createdPlan, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/subscriptions/{id}")
+    public ResponseEntity<SubscriptionPlanDto> updatePlan(
+            @PathVariable Long id,
+            @Valid @RequestBody SubscriptionPlanDto planDto) {
+        SubscriptionPlanDto updatedPlan = adminService.updateSubscriptionPlan(id, planDto);
+        return ResponseEntity.ok(updatedPlan);
+    }
+
+    @DeleteMapping("/subscriptions/{id}")
+    public ResponseEntity<Void> deletePlan(@PathVariable Long id) {
+        adminService.deleteSubscriptionPlan(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/statistics")

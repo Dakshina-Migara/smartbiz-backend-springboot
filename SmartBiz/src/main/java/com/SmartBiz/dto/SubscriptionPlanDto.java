@@ -25,5 +25,13 @@ public class SubscriptionPlanDto {
     @Min(value = 1, message = "Max users must be at least 1")
     private int max_users;
 
+    private String billing_cycle;
+
+    private String features;
+
     private String created_at;
+
+    private Long activeSubscribers;
+
+    private Double monthlyRevenue;
 }

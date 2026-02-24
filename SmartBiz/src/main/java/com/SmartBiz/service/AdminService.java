@@ -31,4 +31,8 @@ public interface AdminService {
     void deleteBusiness(Long businessId);
 
     List<ActivityLogDto> getActivityLogs();
+
+    List<SubscriptionPlanDto> getAllSubscriptionPlans();
+
+    void deleteSubscriptionPlan(Long id);
 }
