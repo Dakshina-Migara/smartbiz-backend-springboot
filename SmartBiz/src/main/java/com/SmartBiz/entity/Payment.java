@@ -7,10 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * Payment Entity - Represents a payment made for a sale.
- * Tracks payment method, amount, and date.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

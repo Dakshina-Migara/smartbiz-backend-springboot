@@ -8,11 +8,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * ProductBatch Entity - Tracks product batches with expiry dates and cost
- * prices.
- * Useful for businesses that deal with perishable goods or batch tracking.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

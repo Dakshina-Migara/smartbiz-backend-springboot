@@ -5,10 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * SaleItem Entity - Represents a line item within a sale transaction.
- * Links a product to a sale with quantity and price details (SubTotal).
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * CustomerDto - Data Transfer Object for Customer data.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

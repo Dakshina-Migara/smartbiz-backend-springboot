@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * PaymentDto - Data Transfer Object for Payment data.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

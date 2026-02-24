@@ -6,9 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * SaleItemDto - Data Transfer Object for sale line items.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

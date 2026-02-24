@@ -7,17 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-/**
- * AiController - REST API for AI-powered features.
- *
- * Endpoints:
- * POST /api/v1/business/{businessId}/ai/query → Natural language data query
- * POST /api/v1/business/{businessId}/ai/generate-email → Generate professional
- * email
- * POST /api/v1/business/{businessId}/ai/generate-post → Generate social media
- * post
- * POST /api/v1/business/{businessId}/ai/explain-invoice → Simplify invoice
- */
 @RestController
 @RequestMapping("/api/v1/business/{businessId}/ai")
 public class AiController {

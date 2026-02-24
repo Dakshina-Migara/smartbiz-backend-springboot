@@ -20,11 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * BusinessOwnerServiceImpl - Implementation of the BusinessOwnerService
- * interface.
- * Contains the actual business logic for business owner operations.
- */
 @Service
 @Transactional
 public class BusinessOwnerServiceImpl implements BusinessOwnerService {
@@ -164,9 +159,6 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             throw new RuntimeException("Failed to generate AI insight: " + e.getMessage());
         }
     }
-
-    // ==================== PRIVATE HELPER METHODS (Entity ↔ DTO Mapping)
-    // ====================
 
     private InventoryDto mapToInventoryDto(Inventory inventory) {
         return new InventoryDto(

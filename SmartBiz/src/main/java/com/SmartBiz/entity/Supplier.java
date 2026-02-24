@@ -7,10 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * Supplier Entity - Represents a supplier for a business.
- * Each supplier belongs to one business (Many suppliers → One business).
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
