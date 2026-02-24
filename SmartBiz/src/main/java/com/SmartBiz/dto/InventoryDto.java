@@ -17,13 +17,23 @@ public class InventoryDto {
     @NotBlank(message = "Product name is required")
     private String productName;
 
-    @NotNull(message = "Stock level is required")
-    @Min(value = 0, message = "Stock level cannot be negative")
-    private Integer stockLevel;
+    private String sku;
+
+    private String category;
 
     @NotNull(message = "Price is required")
     @Min(value = 0, message = "Price cannot be negative")
     private Double price;
+
+    private Double cost;
+
+    @NotNull(message = "Stock level is required")
+    @Min(value = 0, message = "Stock level cannot be negative")
+    private Integer stockLevel;
+
+    private Integer minStockLevel;
+
+    private String stockStatus;
 
     @NotNull(message = "Business ID is required")
     private Long business_id;

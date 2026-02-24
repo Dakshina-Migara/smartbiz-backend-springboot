@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,6 +17,8 @@ public class Businesses {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long business_id;
 
+    private String businessOwnerName;
+
     private String name;
 
     private String address;
@@ -24,6 +28,8 @@ public class Businesses {
     private String phone;
 
     private String status;
+
+    private LocalDateTime registeredDate = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subscription_id")

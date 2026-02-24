@@ -1,6 +1,7 @@
 package com.SmartBiz.service;
 
 import com.SmartBiz.dto.AIRequestDto;
+import com.SmartBiz.dto.ActivityLogDto;
 import com.SmartBiz.dto.BusinessesDto;
 import com.SmartBiz.dto.SubscriptionPlanDto;
 
@@ -18,4 +19,20 @@ public interface AdminService {
     List<AIRequestDto> getGlobalAiLogs();
 
     SubscriptionPlanDto createSubscriptionPlan(SubscriptionPlanDto planDto);
+
+    Map<String, Object> getDashboardStats();
+
+    List<BusinessesDto> searchBusinesses(String query);
+
+    BusinessesDto suspendBusiness(Long businessId);
+
+    BusinessesDto activateBusiness(Long businessId);
+
+    void deleteBusiness(Long businessId);
+
+    List<ActivityLogDto> getActivityLogs();
+
+    List<SubscriptionPlanDto> getAllSubscriptionPlans();
+
+    void deleteSubscriptionPlan(Long id);
 }
