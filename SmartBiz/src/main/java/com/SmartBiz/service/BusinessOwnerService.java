@@ -11,7 +11,11 @@ public interface BusinessOwnerService {
 
     List<InventoryDto> getAllInventory(Long businessId);
 
+    List<InventoryDto> searchInventory(Long businessId, String query);
+
     InventoryDto updateStock(Long productId, Integer quantity, Long businessId);
+
+    InventoryDto updateProduct(Long productId, InventoryDto dto, Long businessId);
 
     SalesDto recordSale(SalesDto dto);
 

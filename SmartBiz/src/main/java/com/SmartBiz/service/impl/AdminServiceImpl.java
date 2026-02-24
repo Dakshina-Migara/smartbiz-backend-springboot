@@ -23,14 +23,17 @@ public class AdminServiceImpl implements AdminService {
     private final AiRequestRepository aiRequestRepository;
     private final SubscriptionPlanRepository subscriptionPlanRepository;
     private final ActivityLogRepository activityLogRepository;
+    private final AdminRepository adminRepository;
 
     @Autowired
     public AdminServiceImpl(BusinessRepository businessRepository, AiRequestRepository aiRequestRepository,
-            SubscriptionPlanRepository subscriptionPlanRepository, ActivityLogRepository activityLogRepository) {
+            SubscriptionPlanRepository subscriptionPlanRepository, ActivityLogRepository activityLogRepository,
+            AdminRepository adminRepository) {
         this.businessRepository = businessRepository;
         this.aiRequestRepository = aiRequestRepository;
         this.subscriptionPlanRepository = subscriptionPlanRepository;
         this.activityLogRepository = activityLogRepository;
+        this.adminRepository = adminRepository;
     }
 
     @Override
@@ -238,6 +241,9 @@ public class AdminServiceImpl implements AdminService {
         dto.setPhone(b.getPhone());
         dto.setStatus(b.getStatus());
         dto.setRegisteredDate(b.getRegisteredDate());
+
+        adminRepository.findByBusinessId(b.getBusiness_id())
+                .ifPresent(owner -> dto.setBusinessOwnerName(owner.getName()));
 
         if (b.getSubscription() != null) {
             dto.setPlanName(b.getSubscription().getPlan_name());
