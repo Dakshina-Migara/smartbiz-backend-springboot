@@ -32,6 +32,12 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getAllCustomers(businessId));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<CustomerDto>> searchCustomers(@PathVariable Long businessId,
+            @RequestParam String q) {
+        return ResponseEntity.ok(customerService.searchCustomers(businessId, q));
+    }
+
     @PutMapping("/{customerId}")
     public ResponseEntity<CustomerDto> updateCustomer(@PathVariable Long businessId,
             @PathVariable Long customerId,

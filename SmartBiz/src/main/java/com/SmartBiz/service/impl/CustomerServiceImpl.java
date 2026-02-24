@@ -41,6 +41,7 @@ public class CustomerServiceImpl implements CustomerService {
             customer.setEmail(dto.getEmail());
             customer.setPhone(dto.getPhone());
             customer.setAddress(dto.getAddress());
+            customer.setTotalPurchases(dto.getTotalPurchases() != null ? dto.getTotalPurchases() : 0.0);
             customer.setBusiness(business);
 
             Customer saved = customerRepository.save(customer);
@@ -65,6 +66,18 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<CustomerDto> searchCustomers(Long businessId, String query) {
+        try {
+            return customerRepository.searchByBusinessId(businessId, query)
+                    .stream().map(this::mapToDto).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error searching customers for business id {}: {}", businessId, e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
     public CustomerDto updateCustomer(Long businessId, Long customerId, CustomerDto dto) {
         try {
             Customer customer = customerRepository.findById(customerId)
@@ -78,6 +91,9 @@ public class CustomerServiceImpl implements CustomerService {
             customer.setEmail(dto.getEmail());
             customer.setPhone(dto.getPhone());
             customer.setAddress(dto.getAddress());
+            if (dto.getTotalPurchases() != null) {
+                customer.setTotalPurchases(dto.getTotalPurchases());
+            }
 
             Customer updated = customerRepository.save(customer);
             log.info("Updated customer id: {}", customerId);
@@ -113,6 +129,7 @@ public class CustomerServiceImpl implements CustomerService {
         dto.setEmail(c.getEmail());
         dto.setPhone(c.getPhone());
         dto.setAddress(c.getAddress());
+        dto.setTotalPurchases(c.getTotalPurchases());
         dto.setCreatedAt(c.getCreatedAt());
         dto.setBusinessId(c.getBusiness().getBusiness_id());
         return dto;

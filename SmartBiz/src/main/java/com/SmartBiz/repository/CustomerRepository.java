@@ -16,4 +16,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     @Query("SELECT COUNT(c) FROM Customer c WHERE c.business.business_id = :businessId")
     Long countByBusinessId(@Param("businessId") Long businessId);
+
+    @Query("SELECT c FROM Customer c WHERE c.business.business_id = :businessId " +
+            "AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "OR LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "OR c.phone LIKE CONCAT('%', :query, '%'))")
+    List<Customer> searchByBusinessId(@Param("businessId") Long businessId, @Param("query") String query);
 }

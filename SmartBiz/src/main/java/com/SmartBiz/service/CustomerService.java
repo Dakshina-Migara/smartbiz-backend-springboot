@@ -8,6 +8,8 @@ public interface CustomerService {
 
     List<CustomerDto> getAllCustomers(Long businessId);
 
+    List<CustomerDto> searchCustomers(Long businessId, String query);
+
     CustomerDto updateCustomer(Long businessId, Long customerId, CustomerDto dto);
 
     void deleteCustomer(Long businessId, Long customerId);
