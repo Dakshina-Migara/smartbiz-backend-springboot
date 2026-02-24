@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/business")
@@ -39,11 +40,29 @@ public class BusinessOwnerController {
         return ResponseEntity.ok(service.searchInventory(businessId, q));
     }
 
+    @GetMapping("/{businessId}/inventory/filter")
+    public ResponseEntity<List<InventoryDto>> filterInventory(@PathVariable Long businessId,
+            @RequestParam String status) {
+        return ResponseEntity.ok(service.filterInventoryByStatus(businessId, status));
+    }
+
+    @GetMapping("/{businessId}/inventory/stats")
+    public ResponseEntity<Map<String, Object>> getInventoryStats(@PathVariable Long businessId) {
+        return ResponseEntity.ok(service.getInventoryStats(businessId));
+    }
+
     @PutMapping("/{businessId}/inventory/{productId}")
     public ResponseEntity<InventoryDto> updateStock(@PathVariable Long businessId,
             @PathVariable Long productId,
             @RequestParam Integer quantity) {
         return ResponseEntity.ok(service.updateStock(productId, quantity, businessId));
+    }
+
+    @PatchMapping("/{businessId}/inventory/{productId}/adjust")
+    public ResponseEntity<InventoryDto> adjustStock(@PathVariable Long businessId,
+            @PathVariable Long productId,
+            @RequestParam int amount) {
+        return ResponseEntity.ok(service.adjustStock(productId, amount, businessId));
     }
 
     @PutMapping("/{businessId}/inventory/{productId}/edit")

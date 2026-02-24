@@ -35,6 +35,8 @@ public class InventoryDto {
 
     private String stockStatus;
 
+    private Double stockValue;
+
     @NotNull(message = "Business ID is required")
     private Long business_id;
 }

@@ -16,8 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -93,6 +92,31 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<InventoryDto> filterInventoryByStatus(Long businessId, String status) {
+        try {
+            List<Inventory> items;
+            switch (status.toLowerCase()) {
+                case "low_stock":
+                    items = inventoryRepository.findLowStockByBusinessId(businessId);
+                    break;
+                case "out_of_stock":
+                    items = inventoryRepository.findOutOfStockByBusinessId(businessId);
+                    break;
+                case "in_stock":
+                    items = inventoryRepository.findInStockByBusinessId(businessId);
+                    break;
+                default:
+                    items = inventoryRepository.findByBusinessId(businessId);
+            }
+            return items.stream().map(this::mapToInventoryDto).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error filtering inventory for business id {}: {}", businessId, e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
     public InventoryDto updateStock(Long productId, Integer quantity, Long businessId) {
         try {
             Inventory inventory = inventoryRepository.findById(productId)
@@ -109,6 +133,31 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         } catch (Exception e) {
             log.error("Error updating stock for product id {}: {}", productId, e.getMessage(), e);
             throw new RuntimeException("Failed to update stock: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public InventoryDto adjustStock(Long productId, int adjustment, Long businessId) {
+        try {
+            Inventory inventory = inventoryRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
+
+            if (!inventory.getBusiness().getBusiness_id().equals(businessId)) {
+                throw new RuntimeException("Unauthorized: Business mismatch");
+            }
+
+            int newStock = inventory.getStockLevel() + adjustment;
+            if (newStock < 0) {
+                throw new RuntimeException("Stock cannot go below 0");
+            }
+
+            inventory.setStockLevel(newStock);
+            Inventory updated = inventoryRepository.save(inventory);
+            log.info("Adjusted stock for product id: {} by {}, new level: {}", productId, adjustment, newStock);
+            return mapToInventoryDto(updated);
+        } catch (Exception e) {
+            log.error("Error adjusting stock for product id {}: {}", productId, e.getMessage(), e);
+            throw new RuntimeException("Failed to adjust stock: " + e.getMessage());
         }
     }
 
@@ -136,6 +185,23 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         } catch (Exception e) {
             log.error("Error updating product id {}: {}", productId, e.getMessage(), e);
             throw new RuntimeException("Failed to update product: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getInventoryStats(Long businessId) {
+        try {
+            Map<String, Object> stats = new LinkedHashMap<>();
+            var items = inventoryRepository.findByBusinessId(businessId);
+            stats.put("totalItems", items.size());
+            stats.put("lowStockAlerts", inventoryRepository.countLowStock(businessId));
+            stats.put("outOfStock", inventoryRepository.countOutOfStock(businessId));
+            stats.put("totalValue", inventoryRepository.calculateInventoryValue(businessId));
+            return stats;
+        } catch (Exception e) {
+            log.error("Error fetching inventory stats for business id {}: {}", businessId, e.getMessage(), e);
+            throw new RuntimeException("Failed to get inventory stats: " + e.getMessage());
         }
     }
 
@@ -217,7 +283,13 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         dto.setMinStockLevel(inventory.getMinStockLevel());
         dto.setBusiness_id(inventory.getBusiness().getBusiness_id());
 
-        if (inventory.getMinStockLevel() != null && inventory.getStockLevel() <= inventory.getMinStockLevel()) {
+        if (inventory.getPrice() != null && inventory.getStockLevel() != null) {
+            dto.setStockValue(inventory.getPrice() * inventory.getStockLevel());
+        }
+
+        if (inventory.getStockLevel() == 0) {
+            dto.setStockStatus("Out of Stock");
+        } else if (inventory.getMinStockLevel() != null && inventory.getStockLevel() <= inventory.getMinStockLevel()) {
             dto.setStockStatus("Low Stock");
         } else {
             dto.setStockStatus("In Stock");
