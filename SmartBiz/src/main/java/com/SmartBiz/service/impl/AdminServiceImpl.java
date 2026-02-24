@@ -13,10 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * AdminServiceImpl - Implementation of the AdminService interface.
- * Contains the actual business logic for admin operations.
- */
 @Service
 @Transactional
 public class AdminServiceImpl implements AdminService {
@@ -110,9 +106,6 @@ public class AdminServiceImpl implements AdminService {
             return Collections.emptyList();
         }
     }
-
-    // ==================== PRIVATE HELPER METHODS (Entity ↔ DTO Mapping)
-    // ====================
 
     private BusinessesDto mapToBusinessDto(Businesses b) {
         BusinessesDto dto = new BusinessesDto();

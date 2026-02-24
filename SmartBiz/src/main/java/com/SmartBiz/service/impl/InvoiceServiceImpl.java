@@ -48,7 +48,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                     .orElseThrow(() -> new RuntimeException("Sale not found with id: " + dto.getSaleId()));
 
             Invoice invoice = new Invoice();
-            // Auto-generate invoice number: INV-20260224-{count}
+
             String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
             long count = invoiceRepository.count() + 1;
             invoice.setInvoiceNumber("INV-" + dateStr + "-" + String.format("%03d", count));

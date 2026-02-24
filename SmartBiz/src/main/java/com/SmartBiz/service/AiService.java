@@ -1,9 +1,5 @@
 package com.SmartBiz.service;
 
-/**
- * AiService - Interface for AI-powered features.
- * Placeholder for OpenAI integration.
- */
 public interface AiService {
     String queryData(Long businessId, String prompt);
 

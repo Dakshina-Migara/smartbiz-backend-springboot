@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * ProductBatchDto - Data Transfer Object for product batch data.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -9,12 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * DashboardController - Provides KPI data for the Business Owner Dashboard.
- *
- * Endpoints:
- * GET /api/v1/business/{businessId}/dashboard/kpis → KPI summary
- */
 @RestController
 @RequestMapping("/api/v1/business/{businessId}/dashboard")
 public class DashboardController {
@@ -28,15 +22,10 @@ public class DashboardController {
         this.inventoryRepository = inventoryRepository;
     }
 
-    /**
-     * GET /api/v1/business/{businessId}/dashboard/kpis
-     * Returns: totalSales, totalProducts, lowStockCount
-     */
     @GetMapping("/kpis")
     public ResponseEntity<Map<String, Object>> getKPIs(@PathVariable Long businessId) {
         Map<String, Object> kpis = new HashMap<>();
 
-        // Total sales amount for this business
         var sales = salesRepository.findByBusinessIdOrderBySaleDateDesc(businessId);
         double totalSales = sales.stream()
                 .mapToDouble(s -> s.getTotalAmount() != null ? s.getTotalAmount() : 0)
@@ -44,7 +33,6 @@ public class DashboardController {
         kpis.put("totalSales", totalSales);
         kpis.put("totalTransactions", sales.size());
 
-        // Inventory stats
         var inventory = inventoryRepository.findByBusinessId(businessId);
         kpis.put("totalProducts", inventory.size());
         long lowStock = inventory.stream()
