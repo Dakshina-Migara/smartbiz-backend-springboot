@@ -83,7 +83,7 @@ public class CustomerServiceImpl implements CustomerService {
             Customer customer = customerRepository.findById(customerId)
                     .orElseThrow(() -> new RuntimeException("Customer not found with id: " + customerId));
 
-            if (!customer.getBusiness().getBusiness_id().equals(businessId)) {
+            if (!customer.getBusiness().getBusinessId().equals(businessId)) {
                 throw new RuntimeException("Unauthorized: Customer does not belong to this business");
             }
 
@@ -110,7 +110,7 @@ public class CustomerServiceImpl implements CustomerService {
             Customer customer = customerRepository.findById(customerId)
                     .orElseThrow(() -> new RuntimeException("Customer not found with id: " + customerId));
 
-            if (!customer.getBusiness().getBusiness_id().equals(businessId)) {
+            if (!customer.getBusiness().getBusinessId().equals(businessId)) {
                 throw new RuntimeException("Unauthorized: Customer does not belong to this business");
             }
 
@@ -131,7 +131,7 @@ public class CustomerServiceImpl implements CustomerService {
         dto.setAddress(c.getAddress());
         dto.setTotalPurchases(c.getTotalPurchases());
         dto.setCreatedAt(c.getCreatedAt());
-        dto.setBusinessId(c.getBusiness().getBusiness_id());
+        dto.setBusinessId(c.getBusiness().getBusinessId());
         return dto;
     }
 }

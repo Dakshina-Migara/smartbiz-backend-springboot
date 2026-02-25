@@ -112,15 +112,15 @@ public class AdminServiceImpl implements AdminService {
     public SubscriptionPlanDto createSubscriptionPlan(SubscriptionPlanDto planDto) {
         try {
             SubscriptionPlan plan = new SubscriptionPlan();
-            plan.setPlan_name(planDto.getPlan_name());
+            plan.setPlanName(planDto.getPlanName());
             plan.setPrice(planDto.getPrice());
-            plan.setAi_token_limit(planDto.getAi_token_limit());
-            plan.setMax_users(planDto.getMax_users());
-            plan.setBilling_cycle(planDto.getBilling_cycle());
+            plan.setAiTokenLimit(planDto.getAiTokenLimit());
+            plan.setMaxUsers(planDto.getMaxUsers());
+            plan.setBillingCycle(planDto.getBillingCycle());
             plan.setFeatures(planDto.getFeatures());
 
             SubscriptionPlan saved = subscriptionPlanRepository.save(plan);
-            log.info("Created subscription plan: {}", saved.getPlan_name());
+            log.info("Created new subscription plan: {}", saved.getPlanName());
             return mapToSubscriptionDto(saved);
         } catch (Exception e) {
             log.error("Error creating subscription plan: {}", e.getMessage(), e);
@@ -134,11 +134,11 @@ public class AdminServiceImpl implements AdminService {
             SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Subscription plan not found with id: " + id));
 
-            plan.setPlan_name(planDto.getPlan_name());
+            plan.setPlanName(planDto.getPlanName());
             plan.setPrice(planDto.getPrice());
-            plan.setAi_token_limit(planDto.getAi_token_limit());
-            plan.setMax_users(planDto.getMax_users());
-            plan.setBilling_cycle(planDto.getBilling_cycle());
+            plan.setAiTokenLimit(planDto.getAiTokenLimit());
+            plan.setMaxUsers(planDto.getMaxUsers());
+            plan.setBillingCycle(planDto.getBillingCycle());
             plan.setFeatures(planDto.getFeatures());
 
             SubscriptionPlan updated = subscriptionPlanRepository.save(plan);
@@ -239,7 +239,7 @@ public class AdminServiceImpl implements AdminService {
 
     private BusinessesDto mapToBusinessDto(Businesses b) {
         BusinessesDto dto = new BusinessesDto();
-        dto.setBusiness_id(b.getBusiness_id());
+        dto.setBusinessId(b.getBusinessId());
         dto.setBusinessOwnerName(b.getBusinessOwnerName());
         dto.setName(b.getName());
         dto.setAddress(b.getAddress());
@@ -248,15 +248,15 @@ public class AdminServiceImpl implements AdminService {
         dto.setStatus(b.getStatus());
         dto.setRegisteredDate(b.getRegisteredDate());
 
-        adminRepository.findByBusinessId(b.getBusiness_id())
+        adminRepository.findByBusinessId(b.getBusinessId())
                 .ifPresent(owner -> dto.setBusinessOwnerName(owner.getName()));
 
         if (b.getSubscription() != null) {
-            dto.setPlanName(b.getSubscription().getPlan_name());
+            dto.setPlanName(b.getSubscription().getPlanName());
             dto.setRevenue(b.getSubscription().getPrice());
         }
 
-        Long aiUsage = aiRequestRepository.sumTokensByBusinessId(b.getBusiness_id());
+        Long aiUsage = aiRequestRepository.sumTokensByBusinessId(b.getBusinessId());
         dto.setAiUsage(aiUsage != null ? aiUsage : 0L);
 
         return dto;
@@ -264,19 +264,19 @@ public class AdminServiceImpl implements AdminService {
 
     private SubscriptionPlanDto mapToSubscriptionDto(SubscriptionPlan s) {
         SubscriptionPlanDto dto = new SubscriptionPlanDto();
-        dto.setSubscription_id(s.getSubscription_id());
-        dto.setPlan_name(s.getPlan_name());
+        dto.setSubscriptionId(s.getSubscriptionId());
+        dto.setPlanName(s.getPlanName());
         dto.setPrice(s.getPrice());
-        dto.setAi_token_limit(s.getAi_token_limit());
-        dto.setMax_users(s.getMax_users());
-        dto.setBilling_cycle(s.getBilling_cycle());
+        dto.setAiTokenLimit(s.getAiTokenLimit());
+        dto.setMaxUsers(s.getMaxUsers());
+        dto.setBillingCycle(s.getBillingCycle());
         dto.setFeatures(s.getFeatures());
-        dto.setCreated_at(s.getCreated_at());
+        dto.setCreatedAt(s.getCreatedAt());
 
-        Long subscribers = subscriptionPlanRepository.countSubscribersByPlanId(s.getSubscription_id());
+        Long subscribers = subscriptionPlanRepository.countSubscribersByPlanId(s.getSubscriptionId());
         dto.setActiveSubscribers(subscribers != null ? subscribers : 0L);
 
-        Double revenue = subscriptionPlanRepository.calculateRevenueByPlanId(s.getSubscription_id());
+        Double revenue = subscriptionPlanRepository.calculateRevenueByPlanId(s.getSubscriptionId());
         dto.setMonthlyRevenue(revenue != null ? revenue : 0.0);
 
         return dto;
@@ -284,7 +284,7 @@ public class AdminServiceImpl implements AdminService {
 
     private AIRequestDto mapToAiDto(AiRequest a) {
         AIRequestDto dto = new AIRequestDto();
-        dto.setRequest_Id(a.getRequest_Id());
+        dto.setRequestId(a.getRequestId());
         dto.setPrompt(a.getPrompt());
         dto.setResponse(a.getResponse());
         dto.setTokenUsed(a.getTokenUsed());

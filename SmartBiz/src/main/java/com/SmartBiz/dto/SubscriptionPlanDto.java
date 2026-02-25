@@ -11,25 +11,25 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SubscriptionPlanDto {
 
-    private Long subscription_id;
+    private Long subscriptionId;
 
     @NotBlank(message = "Plan name is required")
-    private String plan_name;
+    private String planName;
 
     @Min(value = 0, message = "Price must be zero or positive")
     private double price;
 
     @Min(value = 1, message = "AI token limit must be at least 1")
-    private int ai_token_limit;
+    private int aiTokenLimit;
 
     @Min(value = 1, message = "Max users must be at least 1")
-    private int max_users;
+    private int maxUsers;
 
-    private String billing_cycle;
+    private String billingCycle;
 
     private String features;
 
-    private String created_at;
+    private String createdAt;
 
     private Long activeSubscribers;
 

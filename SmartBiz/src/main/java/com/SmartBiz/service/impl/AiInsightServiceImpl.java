@@ -191,7 +191,7 @@ public class AiInsightServiceImpl implements AiInsightService {
 
     private AiInsightResponseDto mapToDto(AiRequest request) {
         AiInsightResponseDto dto = new AiInsightResponseDto();
-        dto.setRequestId(request.getRequest_Id());
+        dto.setRequestId(request.getRequestId());
         dto.setPrompt(request.getPrompt());
         dto.setType(request.getType());
         dto.setResponse(request.getResponse());

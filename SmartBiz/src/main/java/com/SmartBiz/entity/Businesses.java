@@ -15,7 +15,7 @@ public class Businesses {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long business_id;
+    private Long businessId;
 
     private String businessOwnerName;
 

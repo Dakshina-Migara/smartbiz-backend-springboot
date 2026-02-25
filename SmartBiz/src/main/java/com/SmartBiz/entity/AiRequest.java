@@ -15,7 +15,7 @@ public class AiRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long request_Id;
+    private Long requestId;
 
     private String prompt;
 

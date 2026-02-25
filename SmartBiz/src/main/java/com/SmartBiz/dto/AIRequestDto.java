@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AIRequestDto {
 
-    private Long request_Id;
+    private Long requestId;
 
     private String prompt;
 

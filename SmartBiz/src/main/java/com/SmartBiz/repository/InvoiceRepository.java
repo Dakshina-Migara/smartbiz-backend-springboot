@@ -11,6 +11,6 @@ import java.util.List;
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
-    @Query("SELECT i FROM Invoice i WHERE i.business.business_id = :businessId ORDER BY i.createdAt DESC")
+    @Query("SELECT i FROM Invoice i WHERE i.business.businessId = :businessId ORDER BY i.createdAt DESC")
     List<Invoice> findByBusinessId(@Param("businessId") Long businessId);
 }

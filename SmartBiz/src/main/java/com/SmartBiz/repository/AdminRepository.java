@@ -13,7 +13,7 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     Optional<Admin> findByEmail(String email);
 
-    @Query("SELECT a FROM Admin a WHERE a.business.business_id = :businessId")
+    @Query("SELECT a FROM Admin a WHERE a.business.businessId = :businessId")
     Optional<Admin> findByBusinessId(@Param("businessId") Long businessId);
 
     Boolean existsByEmail(String email);

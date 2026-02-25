@@ -83,7 +83,7 @@ public class SupplierServiceImpl implements SupplierService {
             Supplier supplier = supplierRepository.findById(supplierId)
                     .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
 
-            if (!supplier.getBusiness().getBusiness_id().equals(businessId)) {
+            if (!supplier.getBusiness().getBusinessId().equals(businessId)) {
                 throw new RuntimeException("Unauthorized: Supplier does not belong to this business");
             }
 
@@ -108,7 +108,7 @@ public class SupplierServiceImpl implements SupplierService {
             Supplier supplier = supplierRepository.findById(supplierId)
                     .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
 
-            if (!supplier.getBusiness().getBusiness_id().equals(businessId)) {
+            if (!supplier.getBusiness().getBusinessId().equals(businessId)) {
                 throw new RuntimeException("Unauthorized: Supplier does not belong to this business");
             }
 
@@ -129,7 +129,7 @@ public class SupplierServiceImpl implements SupplierService {
         dto.setPhone(s.getPhone());
         dto.setAddress(s.getAddress());
         dto.setCreatedAt(s.getCreatedAt());
-        dto.setBusinessId(s.getBusiness().getBusiness_id());
+        dto.setBusinessId(s.getBusiness().getBusinessId());
         return dto;
     }
 }

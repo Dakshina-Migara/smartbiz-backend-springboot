@@ -91,7 +91,7 @@ public class PaymentServiceImpl implements PaymentService {
         dto.setAmount(p.getAmount());
         dto.setPaymentDate(p.getPaymentDate());
         dto.setSaleId(p.getSale().getSaleId());
-        dto.setBusinessId(p.getBusiness().getBusiness_id());
+        dto.setBusinessId(p.getBusiness().getBusinessId());
         return dto;
     }
 }

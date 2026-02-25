@@ -15,8 +15,8 @@ public interface BusinessRepository extends JpaRepository<Businesses, Long> {
 
         Long countBySubscriptionIsNotNull();
 
-        @Query("SELECT b.subscription.plan_name, COUNT(b), SUM(b.subscription.price) " +
-                        "FROM Businesses b WHERE b.subscription IS NOT NULL GROUP BY b.subscription.plan_name")
+        @Query("SELECT b.subscription.planName, COUNT(b), SUM(b.subscription.price) " +
+                        "FROM Businesses b WHERE b.subscription IS NOT NULL GROUP BY b.subscription.planName")
         List<Object[]> countAndRevenueByPlan();
 
         @Query("SELECT b FROM Businesses b WHERE LOWER(b.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
@@ -24,6 +24,6 @@ public interface BusinessRepository extends JpaRepository<Businesses, Long> {
                         "OR LOWER(b.email) LIKE LOWER(CONCAT('%', :query, '%'))")
         List<Businesses> searchBusinesses(@Param("query") String query);
 
-        @Query("SELECT b FROM Businesses b WHERE b.subscription.subscription_id = :planId")
+        @Query("SELECT b FROM Businesses b WHERE b.subscription.subscriptionId = :planId")
         List<Businesses> findBySubscriptionId(@Param("planId") Long planId);
 }
