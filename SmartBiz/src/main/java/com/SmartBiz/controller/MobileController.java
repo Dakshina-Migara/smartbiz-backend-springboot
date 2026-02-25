@@ -68,7 +68,7 @@ public class MobileController {
     @PostMapping("/inventory")
     public ResponseEntity<InventoryDto> addMobileInventory(@PathVariable Long businessId,
             @Valid @RequestBody InventoryDto dto) {
-        dto.setBusiness_id(businessId);
+        dto.setBusinessId(businessId);
         return new ResponseEntity<>(businessOwnerService.addInventory(dto), HttpStatus.CREATED);
     }
 

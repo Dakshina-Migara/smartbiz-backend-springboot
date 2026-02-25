@@ -58,13 +58,6 @@ public class BusinessOwnerController {
         return ResponseEntity.ok(service.updateStock(productId, quantity, businessId));
     }
 
-    @PatchMapping("/{businessId}/inventory/{productId}/adjust")
-    public ResponseEntity<InventoryDto> adjustStock(@PathVariable Long businessId,
-            @PathVariable Long productId,
-            @RequestParam int amount) {
-        return ResponseEntity.ok(service.adjustStock(productId, amount, businessId));
-    }
-
     @PutMapping("/{businessId}/inventory/{productId}/edit")
     public ResponseEntity<InventoryDto> updateProduct(@PathVariable Long businessId,
             @PathVariable Long productId,

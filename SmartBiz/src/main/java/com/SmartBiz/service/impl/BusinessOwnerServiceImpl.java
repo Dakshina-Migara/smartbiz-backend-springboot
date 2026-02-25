@@ -46,8 +46,8 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     @Override
     public InventoryDto addInventory(InventoryDto dto) {
         try {
-            Businesses business = businessRepository.findById(dto.getBusiness_id())
-                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + dto.getBusiness_id()));
+            Businesses business = businessRepository.findById(dto.getBusinessId())
+                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + dto.getBusinessId()));
 
             Inventory inventory = new Inventory();
             inventory.setProductName(dto.getProductName());
@@ -66,7 +66,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             }
 
             Inventory saved = inventoryRepository.save(inventory);
-            log.info("Added inventory product '{}' for business id: {}", dto.getProductName(), dto.getBusiness_id());
+            log.info("Added inventory product '{}' for business id: {}", dto.getProductName(), dto.getBusinessId());
             return mapToInventoryDto(saved);
         } catch (Exception e) {
             log.error("Error adding inventory: {}", e.getMessage(), e);
@@ -134,7 +134,8 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                     .orElseThrow(() -> new RuntimeException("Inventory not found with id: " + productId));
 
             if (!inventory.getBusiness().getBusinessId().equals(businessId)) {
-                throw new RuntimeException("Unauthorized: Business mismatch");
+                throw new RuntimeException(
+                        "Unauthorized: Business mismatch for product " + productId + " and business " + businessId);
             }
 
             inventory.setStockLevel(quantity);
@@ -227,8 +228,8 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     @Override
     public SalesDto recordSale(SalesDto dto) {
         try {
-            Businesses business = businessRepository.findById(dto.getBusiness_id())
-                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + dto.getBusiness_id()));
+            Businesses business = businessRepository.findById(dto.getBusinessId())
+                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + dto.getBusinessId()));
 
             Sales sale = new Sales();
             sale.setTotalAmount(dto.getTotalAmount());
@@ -250,7 +251,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             }
 
             Sales savedSale = salesRepository.save(sale);
-            log.info("Recorded sale for business id: {}, amount: {}", dto.getBusiness_id(), dto.getTotalAmount());
+            log.info("Recorded sale for business id: {}, amount: {}", dto.getBusinessId(), dto.getTotalAmount());
             return mapToSalesDto(savedSale);
         } catch (Exception e) {
             log.error("Error recording sale: {}", e.getMessage(), e);
@@ -410,7 +411,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         dto.setCost(inventory.getCost());
         dto.setStockLevel(inventory.getStockLevel());
         dto.setMinStockLevel(inventory.getMinStockLevel());
-        dto.setBusiness_id(inventory.getBusiness().getBusinessId());
+        dto.setBusinessId(inventory.getBusiness().getBusinessId());
 
         if (inventory.getSupplier() != null) {
             dto.setSupplierId(inventory.getSupplier().getSupplierId());
@@ -441,7 +442,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         dto.setPaymentMethod(sale.getPaymentMethod());
         dto.setStatus(sale.getStatus());
         dto.setSaleDate(sale.getSaleDate());
-        dto.setBusiness_id(sale.getBusiness().getBusinessId());
+        dto.setBusinessId(sale.getBusiness().getBusinessId());
 
         if (sale.getCustomer() != null) {
             dto.setCustomerId(sale.getCustomer().getCustomerId());
