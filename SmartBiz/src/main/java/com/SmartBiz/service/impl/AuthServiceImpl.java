@@ -92,12 +92,20 @@ public class AuthServiceImpl implements AuthService {
             response.put("adminId", admin.getAdminId());
             response.put("role", admin.getRole());
 
+            if ("ADMIN".equalsIgnoreCase(admin.getRole())) {
+                response.put("accessibleArea", "ADMIN_PORTAL");
+                response.put("homePath", "/admin/dashboard");
+            } else {
+                response.put("accessibleArea", "BUSINESS_PORTAL");
+                response.put("homePath", "/business/dashboard");
+            }
+
             if (admin.getBusiness() != null) {
                 response.put("businessId", admin.getBusiness().getBusinessId());
                 response.put("businessName", admin.getBusiness().getName());
             }
 
-            log.info("User logged in: {}", admin.getEmail());
+            log.info("User {} logged in as {}", admin.getEmail(), admin.getRole());
             return response;
 
         } catch (ResourceNotFoundException e) {
