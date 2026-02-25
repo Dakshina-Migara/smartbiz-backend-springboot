@@ -26,18 +26,21 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     private final BusinessRepository businessRepository;
     private final SupplierRepository supplierRepository;
     private final CustomerRepository customerRepository;
+    private final SaleItemRepository saleItemRepository;
 
     @Autowired
     public BusinessOwnerServiceImpl(InventoryRepository inventoryRepository,
             SalesRepository salesRepository,
             BusinessRepository businessRepository,
             SupplierRepository supplierRepository,
-            CustomerRepository customerRepository) {
+            CustomerRepository customerRepository,
+            SaleItemRepository saleItemRepository) {
         this.inventoryRepository = inventoryRepository;
         this.salesRepository = salesRepository;
         this.businessRepository = businessRepository;
         this.supplierRepository = supplierRepository;
         this.customerRepository = customerRepository;
+        this.saleItemRepository = saleItemRepository;
     }
 
     @Override
@@ -298,6 +301,89 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         } catch (Exception e) {
             log.error("Error deleting product id {}: {}", productId, e.getMessage(), e);
             throw new RuntimeException("Failed to delete product: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public SalesDto recordMobileSale(Long businessId, com.SmartBiz.dto.MobileSaleRequestDto dto) {
+        try {
+            Businesses business = businessRepository.findById(businessId)
+                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+
+            // 1. Find or create customer
+            Customer customer = customerRepository.findByBusinessId(businessId).stream()
+                    .filter(c -> c.getName().equalsIgnoreCase(dto.getCustomerName()))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        Customer newCustomer = new Customer();
+                        newCustomer.setName(dto.getCustomerName());
+                        newCustomer.setEmail(dto.getCustomerEmail());
+                        newCustomer.setPhone(dto.getCustomerPhone());
+                        newCustomer.setBusiness(business);
+                        newCustomer.setTotalPurchases(0.0);
+                        return customerRepository.save(newCustomer);
+                    });
+
+            // 2. Process sale items and calculate total
+            double totalAmount = 0;
+            int totalQty = 0;
+            List<SaleItem> saleItems = new ArrayList<>();
+
+            for (com.SmartBiz.dto.SaleItemDto itemDto : dto.getItems()) {
+                Inventory inventory = inventoryRepository.findById(itemDto.getProductId())
+                        .orElseThrow(() -> new RuntimeException("Product not found: " + itemDto.getProductId()));
+
+                if (inventory.getStockLevel() < itemDto.getQty()) {
+                    throw new RuntimeException("Insufficient stock for product: " + inventory.getProductName());
+                }
+
+                // Deduct stock
+                inventory.setStockLevel(inventory.getStockLevel() - itemDto.getQty());
+                inventoryRepository.save(inventory);
+
+                SaleItem saleItem = new SaleItem();
+                saleItem.setProduct(inventory);
+                saleItem.setQty(itemDto.getQty());
+                saleItem.setPrice(itemDto.getPrice());
+
+                totalAmount += (itemDto.getPrice() * itemDto.getQty());
+                totalQty += itemDto.getQty();
+                saleItems.add(saleItem);
+            }
+
+            // 3. Save Sale
+            Sales sale = new Sales();
+            sale.setBusiness(business);
+            sale.setCustomer(customer);
+            sale.setTotalAmount(totalAmount);
+            sale.setItemsCount(totalQty);
+            sale.setPaymentMethod(dto.getPaymentMethod());
+            sale.setStatus(dto.getStatus());
+            sale.setSaleDate(LocalDateTime.now());
+
+            // Generate invoice number if not set (Sales entity might handle this or we can
+            // do it here)
+            if (sale.getInvoiceNumber() == null) {
+                sale.setInvoiceNumber("INV-" + System.currentTimeMillis() % 1000000);
+            }
+
+            Sales savedSale = salesRepository.save(sale);
+
+            // 4. Link items to sale and save
+            for (SaleItem si : saleItems) {
+                si.setSale(savedSale);
+                saleItemRepository.save(si);
+            }
+
+            // 5. Update customer total purchases
+            customer.setTotalPurchases(customer.getTotalPurchases() + totalAmount);
+            customerRepository.save(customer);
+
+            log.info("Mobile sale recorded: {} items, total: {}", totalQty, totalAmount);
+            return mapToSalesDto(savedSale);
+        } catch (Exception e) {
+            log.error("Error recording mobile sale: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to record mobile sale: " + e.getMessage());
         }
     }
 

@@ -21,13 +21,13 @@ public class SupplierController {
         this.supplierService = supplierService;
     }
 
-    @PostMapping
+    @PostMapping("/addSupplier")
     public ResponseEntity<SupplierDto> addSupplier(@PathVariable Long businessId,
             @Valid @RequestBody SupplierDto dto) {
         return new ResponseEntity<>(supplierService.addSupplier(businessId, dto), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("/getAllSuppliers")
     public ResponseEntity<List<SupplierDto>> getAllSuppliers(@PathVariable Long businessId) {
         return ResponseEntity.ok(supplierService.getAllSuppliers(businessId));
     }

@@ -19,7 +19,10 @@ public class AiRequest {
 
     private String prompt;
 
+    @Column(columnDefinition = "TEXT")
     private String response;
+
+    private String type;
 
     private Integer tokenUsed;
 
@@ -32,5 +35,4 @@ public class AiRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Admin user;
-
 }
