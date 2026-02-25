@@ -38,7 +38,6 @@ public class MobileController {
     public ResponseEntity<Map<String, Object>> getMobileDashboard(@PathVariable Long businessId) {
         Map<String, Object> data = new LinkedHashMap<>();
 
-        // Stats for the 4 cards
         long totalProducts = inventoryRepository.findByBusinessId(businessId).size();
         var sales = salesRepository.findByBusinessIdOrderBySaleDateDesc(businessId);
         long totalSales = sales.size();
@@ -55,7 +54,6 @@ public class MobileController {
         return ResponseEntity.ok(data);
     }
 
-    // Inventory Endpoints for Mobile
     @GetMapping("/inventory")
     public ResponseEntity<List<InventoryDto>> getMobileInventory(@PathVariable Long businessId) {
         return ResponseEntity.ok(businessOwnerService.getAllInventory(businessId));
@@ -86,7 +84,6 @@ public class MobileController {
         return ResponseEntity.noContent().build();
     }
 
-    // Sales Endpoints for Mobile
     @PostMapping("/sales")
     public ResponseEntity<com.SmartBiz.dto.SalesDto> recordMobileSale(@PathVariable Long businessId,
             @Valid @RequestBody com.SmartBiz.dto.MobileSaleRequestDto dto) {
