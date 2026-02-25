@@ -50,12 +50,12 @@ public class AuthServiceImpl implements AuthService {
 
             Businesses savedBusiness = businessRepository.save(business);
 
-            // 2. Create Admin (Owner account)
+            // 2. Create Admin account
             Admin admin = new Admin();
             admin.setName(dto.getOwnerName());
             admin.setEmail(dto.getEmail());
             admin.setPassword(dto.getPassword()); // In production, hash this!
-            admin.setRole("OWNER");
+            admin.setRole(dto.getRole() != null ? dto.getRole().toUpperCase() : "OWNER");
             admin.setBusiness(savedBusiness);
             admin.setCreatedAt(LocalDateTime.now());
 
@@ -65,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Registration successful");
-            response.put("businessId", savedBusiness.getBusiness_id());
+            response.put("businessId", savedBusiness.getBusinessId());
             response.put("ownerEmail", admin.getEmail());
             return response;
 
@@ -89,11 +89,11 @@ public class AuthServiceImpl implements AuthService {
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Login successful");
-            response.put("adminId", admin.getAdmin_Id());
+            response.put("adminId", admin.getAdminId());
             response.put("role", admin.getRole());
 
             if (admin.getBusiness() != null) {
-                response.put("businessId", admin.getBusiness().getBusiness_id());
+                response.put("businessId", admin.getBusiness().getBusinessId());
                 response.put("businessName", admin.getBusiness().getName());
             }
 

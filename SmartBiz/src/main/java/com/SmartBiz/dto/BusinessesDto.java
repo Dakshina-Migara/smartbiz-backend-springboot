@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BusinessesDto {
 
-    private Long business_id;
+    private Long businessId;
 
     private String businessOwnerName;
 

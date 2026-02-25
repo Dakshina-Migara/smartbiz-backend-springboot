@@ -22,4 +22,6 @@ public class RegistrationDto {
     private String password;
 
     private String phone;
+
+    private String role; // OWNER or ADMIN
 }

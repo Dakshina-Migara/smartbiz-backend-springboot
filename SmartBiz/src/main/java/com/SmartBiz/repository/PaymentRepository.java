@@ -11,12 +11,12 @@ import java.util.List;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    @Query("SELECT p FROM Payment p WHERE p.business.business_id = :businessId ORDER BY p.paymentDate DESC")
+    @Query("SELECT p FROM Payment p WHERE p.business.businessId = :businessId ORDER BY p.paymentDate DESC")
     List<Payment> findByBusinessId(@Param("businessId") Long businessId);
 
     @Query("SELECT p FROM Payment p WHERE p.sale.saleId = :saleId")
     List<Payment> findBySaleId(@Param("saleId") Long saleId);
 
-    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.business.business_id = :businessId")
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.business.businessId = :businessId")
     Double sumAmountByBusinessId(@Param("businessId") Long businessId);
 }

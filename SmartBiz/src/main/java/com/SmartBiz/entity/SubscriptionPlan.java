@@ -17,20 +17,20 @@ public class SubscriptionPlan {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long subscription_id;
+    private Long subscriptionId;
 
-    private String plan_name;
+    private String planName;
 
     private double price;
 
-    private int ai_token_limit;
+    private int aiTokenLimit;
 
-    private int max_users;
+    private int maxUsers;
 
-    private String billing_cycle;
+    private String billingCycle;
 
     @Column(columnDefinition = "TEXT")
     private String features;
 
-    private String created_at;
+    private String createdAt;
 }

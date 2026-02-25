@@ -23,12 +23,12 @@ public interface AiRequestRepository extends JpaRepository<AiRequest, Long> {
                         "GROUP BY DATE(created_at) ORDER BY log_date", nativeQuery = true)
         List<Object[]> dailyTokenUsageLast30Days();
 
-        @Query("SELECT SUM(a.tokenUsed) FROM AiRequest a WHERE a.business.business_id = :businessId")
+        @Query("SELECT SUM(a.tokenUsed) FROM AiRequest a WHERE a.business.businessId = :businessId")
         Long sumTokensByBusinessId(@Param("businessId") Long businessId);
 
-        @Query("SELECT a FROM AiRequest a WHERE a.business.business_id = :businessId ORDER BY a.createdAt DESC")
+        @Query("SELECT a FROM AiRequest a WHERE a.business.businessId = :businessId ORDER BY a.createdAt DESC")
         List<AiRequest> findByBusinessId(@Param("businessId") Long businessId);
 
-        @Query("SELECT a FROM AiRequest a WHERE a.business.business_id = :businessId AND a.type = :type ORDER BY a.createdAt DESC")
+        @Query("SELECT a FROM AiRequest a WHERE a.business.businessId = :businessId AND a.type = :type ORDER BY a.createdAt DESC")
         List<AiRequest> findByBusinessIdAndType(@Param("businessId") Long businessId, @Param("type") String type);
 }
