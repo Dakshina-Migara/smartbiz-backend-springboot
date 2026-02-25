@@ -2,14 +2,8 @@ package com.SmartBiz.service.impl;
 
 import com.SmartBiz.dto.InventoryDto;
 import com.SmartBiz.dto.SalesDto;
-import com.SmartBiz.entity.Businesses;
-import com.SmartBiz.entity.Inventory;
-import com.SmartBiz.entity.Sales;
-import com.SmartBiz.entity.Supplier;
-import com.SmartBiz.repository.BusinessRepository;
-import com.SmartBiz.repository.InventoryRepository;
-import com.SmartBiz.repository.SalesRepository;
-import com.SmartBiz.repository.SupplierRepository;
+import com.SmartBiz.entity.*;
+import com.SmartBiz.repository.*;
 import com.SmartBiz.service.BusinessOwnerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,16 +25,19 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     private final SalesRepository salesRepository;
     private final BusinessRepository businessRepository;
     private final SupplierRepository supplierRepository;
+    private final CustomerRepository customerRepository;
 
     @Autowired
     public BusinessOwnerServiceImpl(InventoryRepository inventoryRepository,
             SalesRepository salesRepository,
             BusinessRepository businessRepository,
-            SupplierRepository supplierRepository) {
+            SupplierRepository supplierRepository,
+            CustomerRepository customerRepository) {
         this.inventoryRepository = inventoryRepository;
         this.salesRepository = salesRepository;
         this.businessRepository = businessRepository;
         this.supplierRepository = supplierRepository;
+        this.customerRepository = customerRepository;
     }
 
     @Override
@@ -233,8 +230,21 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             Sales sale = new Sales();
             sale.setTotalAmount(dto.getTotalAmount());
             sale.setItemsCount(dto.getItemsCount());
+            sale.setPaymentMethod(dto.getPaymentMethod());
+            sale.setStatus(dto.getStatus() != null ? dto.getStatus() : "completed");
             sale.setSaleDate(dto.getSaleDate() != null ? dto.getSaleDate() : LocalDateTime.now());
             sale.setBusiness(business);
+
+            if (dto.getCustomerId() != null) {
+                Customer customer = customerRepository.findById(dto.getCustomerId())
+                        .orElseThrow(() -> new RuntimeException("Customer not found with id: " + dto.getCustomerId()));
+                sale.setCustomer(customer);
+
+                // Update customer totalPurchases
+                double currentTotal = customer.getTotalPurchases() != null ? customer.getTotalPurchases() : 0.0;
+                customer.setTotalPurchases(currentTotal + dto.getTotalAmount());
+                customerRepository.save(customer);
+            }
 
             Sales savedSale = salesRepository.save(sale);
             log.info("Recorded sale for business id: {}, amount: {}", dto.getBusiness_id(), dto.getTotalAmount());
@@ -255,6 +265,20 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching sales history for business id {}: {}", businessId, e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesDto> searchSales(Long businessId, String query) {
+        try {
+            return salesRepository.searchByBusinessId(businessId, query)
+                    .stream()
+                    .map(this::mapToSalesDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error searching sales for business id {}: {}", businessId, e.getMessage(), e);
             return Collections.emptyList();
         }
     }
@@ -323,11 +347,21 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     }
 
     private SalesDto mapToSalesDto(Sales sale) {
-        return new SalesDto(
-                sale.getSaleId(),
-                sale.getTotalAmount(),
-                sale.getItemsCount(),
-                sale.getSaleDate(),
-                sale.getBusiness().getBusiness_id());
+        SalesDto dto = new SalesDto();
+        dto.setSaleId(sale.getSaleId());
+        dto.setInvoiceNumber(sale.getInvoiceNumber());
+        dto.setTotalAmount(sale.getTotalAmount());
+        dto.setItemsCount(sale.getItemsCount());
+        dto.setPaymentMethod(sale.getPaymentMethod());
+        dto.setStatus(sale.getStatus());
+        dto.setSaleDate(sale.getSaleDate());
+        dto.setBusiness_id(sale.getBusiness().getBusiness_id());
+
+        if (sale.getCustomer() != null) {
+            dto.setCustomerId(sale.getCustomer().getCustomerId());
+            dto.setCustomerName(sale.getCustomer().getName());
+        }
+
+        return dto;
     }
 }

@@ -28,6 +28,8 @@ public interface BusinessOwnerService {
 
     List<SalesDto> getSalesHistory(Long businessId);
 
+    List<SalesDto> searchSales(Long businessId, String query);
+
     void deleteProduct(Long productId, Long businessId);
 
     String generateAiInsight(Long businessId, String prompt);

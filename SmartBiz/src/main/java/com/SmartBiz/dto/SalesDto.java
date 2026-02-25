@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Data
@@ -14,6 +15,12 @@ public class SalesDto {
 
     private Long saleId;
 
+    private String invoiceNumber;
+
+    private Long customerId;
+
+    private String customerName;
+
     @NotNull(message = "Total amount is required")
     @Min(value = 0, message = "Total amount cannot be negative")
     private Double totalAmount;
@@ -21,6 +28,10 @@ public class SalesDto {
     @NotNull(message = "Items count is required")
     @Min(value = 1, message = "Items count must be at least 1")
     private Integer itemsCount;
+
+    private String paymentMethod;
+
+    private String status;
 
     private LocalDateTime saleDate;
 
