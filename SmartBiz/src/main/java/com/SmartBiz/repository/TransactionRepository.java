@@ -27,4 +27,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("SELECT t FROM Transaction t WHERE t.business.business_id = :businessId AND t.type = :type ORDER BY t.date DESC")
     List<Transaction> findByBusinessIdAndType(@Param("businessId") Long businessId, @Param("type") String type);
+
+    @Query("SELECT t.category, COALESCE(SUM(t.amount), 0) FROM Transaction t " +
+            "WHERE t.business.business_id = :businessId AND t.type = 'expense' " +
+            "GROUP BY t.category ORDER BY SUM(t.amount) DESC")
+    List<Object[]> expensesByCategory(@Param("businessId") Long businessId);
+
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
+            "WHERE t.business.business_id = :businessId AND t.type = 'expense' " +
+            "AND MONTH(t.date) = MONTH(CURRENT_DATE) AND YEAR(t.date) = YEAR(CURRENT_DATE)")
+    Double sumCurrentMonthExpenses(@Param("businessId") Long businessId);
 }
