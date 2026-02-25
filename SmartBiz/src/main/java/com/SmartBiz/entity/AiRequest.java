@@ -33,10 +33,4 @@ public class AiRequest {
     @JoinColumn(name = "user_id")
     private Admin user;
 
-    public AiRequest(String prompt, String response, Integer tokenUsed, LocalDateTime createdAt) {
-        this.prompt = prompt;
-        this.response = response;
-        this.tokenUsed = tokenUsed;
-        this.createdAt = createdAt;
-    }
 }

@@ -33,12 +33,4 @@ public class SubscriptionPlan {
     private String features;
 
     private String created_at;
-
-    public SubscriptionPlan(String plan_name, double price, int ai_token_limit, int max_users, String created_at) {
-        this.plan_name = plan_name;
-        this.price = price;
-        this.ai_token_limit = ai_token_limit;
-        this.max_users = max_users;
-        this.created_at = created_at;
-    }
 }

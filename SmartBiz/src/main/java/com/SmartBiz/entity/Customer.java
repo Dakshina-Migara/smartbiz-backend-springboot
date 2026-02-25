@@ -22,6 +22,8 @@ public class Customer {
     private String phone;
     private String address;
 
+    private Double totalPurchases = 0.0;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
