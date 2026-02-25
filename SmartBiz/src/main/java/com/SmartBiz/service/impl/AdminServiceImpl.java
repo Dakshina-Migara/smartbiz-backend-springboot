@@ -2,6 +2,7 @@ package com.SmartBiz.service.impl;
 
 import com.SmartBiz.dto.*;
 import com.SmartBiz.entity.*;
+import com.SmartBiz.exception.ResourceNotFoundException;
 import com.SmartBiz.repository.*;
 import com.SmartBiz.service.AdminService;
 import org.slf4j.Logger;
@@ -63,7 +64,7 @@ public class AdminServiceImpl implements AdminService {
     public BusinessesDto suspendBusiness(Long businessId) {
         try {
             Businesses business = businessRepository.findById(businessId)
-                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
             business.setStatus("suspended");
             Businesses updated = businessRepository.save(business);
             log.info("Suspended business id: {}", businessId);
@@ -78,7 +79,7 @@ public class AdminServiceImpl implements AdminService {
     public BusinessesDto activateBusiness(Long businessId) {
         try {
             Businesses business = businessRepository.findById(businessId)
-                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
             business.setStatus("active");
             Businesses updated = businessRepository.save(business);
             log.info("Activated business id: {}", businessId);
@@ -93,11 +94,13 @@ public class AdminServiceImpl implements AdminService {
     public void deleteBusiness(Long businessId) {
         try {
             Businesses business = businessRepository.findById(businessId)
-                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
 
             // cascades in Businesses entity handle the rest
             businessRepository.delete(business);
             log.info("Successfully deleted business id: {} and all its associated data via JPA cascades", businessId);
+        } catch (ResourceNotFoundException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting business id {}: {}", businessId, e.getMessage(), e);
             throw new RuntimeException(
@@ -129,7 +132,7 @@ public class AdminServiceImpl implements AdminService {
     public SubscriptionPlanDto updateSubscriptionPlan(Long id, SubscriptionPlanDto planDto) {
         try {
             SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Subscription plan not found with id: " + id));
+                    .orElseThrow(() -> new ResourceNotFoundException("Subscription plan not found with id: " + id));
 
             plan.setPlan_name(planDto.getPlan_name());
             plan.setPrice(planDto.getPrice());
@@ -317,7 +320,7 @@ public class AdminServiceImpl implements AdminService {
     public void deleteSubscriptionPlan(Long id) {
         try {
             SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Subscription plan not found with id: " + id));
+                    .orElseThrow(() -> new ResourceNotFoundException("Subscription plan not found with id: " + id));
 
             // Unlink businesses using this plan before deletion
             List<Businesses> businesses = businessRepository.findBySubscriptionId(id);
@@ -328,6 +331,8 @@ public class AdminServiceImpl implements AdminService {
 
             subscriptionPlanRepository.delete(plan);
             log.info("Deleted subscription plan id: {}", id);
+        } catch (ResourceNotFoundException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting subscription plan id {}: {}", id, e.getMessage(), e);
             throw new RuntimeException("Failed to delete subscription plan: " + e.getMessage());
