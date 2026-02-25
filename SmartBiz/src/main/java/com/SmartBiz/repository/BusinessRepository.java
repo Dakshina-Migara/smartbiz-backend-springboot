@@ -11,16 +11,19 @@ import java.util.List;
 @Repository
 public interface BusinessRepository extends JpaRepository<Businesses, Long> {
 
-    Long countByStatus(String status);
+        Long countByStatus(String status);
 
-    Long countBySubscriptionIsNotNull();
+        Long countBySubscriptionIsNotNull();
 
-    @Query("SELECT b.subscription.plan_name, COUNT(b), SUM(b.subscription.price) " +
-            "FROM Businesses b WHERE b.subscription IS NOT NULL GROUP BY b.subscription.plan_name")
-    List<Object[]> countAndRevenueByPlan();
+        @Query("SELECT b.subscription.plan_name, COUNT(b), SUM(b.subscription.price) " +
+                        "FROM Businesses b WHERE b.subscription IS NOT NULL GROUP BY b.subscription.plan_name")
+        List<Object[]> countAndRevenueByPlan();
 
-    @Query("SELECT b FROM Businesses b WHERE LOWER(b.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "OR LOWER(b.businessOwnerName) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "OR LOWER(b.email) LIKE LOWER(CONCAT('%', :query, '%'))")
-    List<Businesses> searchBusinesses(@Param("query") String query);
+        @Query("SELECT b FROM Businesses b WHERE LOWER(b.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
+                        "OR LOWER(b.businessOwnerName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+                        "OR LOWER(b.email) LIKE LOWER(CONCAT('%', :query, '%'))")
+        List<Businesses> searchBusinesses(@Param("query") String query);
+
+        @Query("SELECT b FROM Businesses b WHERE b.subscription.subscription_id = :planId")
+        List<Businesses> findBySubscriptionId(@Param("planId") Long planId);
 }
