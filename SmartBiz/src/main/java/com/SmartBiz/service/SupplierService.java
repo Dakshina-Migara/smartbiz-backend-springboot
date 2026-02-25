@@ -8,6 +8,8 @@ public interface SupplierService {
 
     List<SupplierDto> getAllSuppliers(Long businessId);
 
+    List<SupplierDto> searchSuppliers(Long businessId, String query);
+
     SupplierDto updateSupplier(Long businessId, Long supplierId, SupplierDto dto);
 
     void deleteSupplier(Long businessId, Long supplierId);

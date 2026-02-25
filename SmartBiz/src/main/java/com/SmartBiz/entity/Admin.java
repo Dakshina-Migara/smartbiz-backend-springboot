@@ -28,12 +28,4 @@ public class Admin {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_id")
     private Businesses business;
-
-    public Admin(String name, String email, String password, String role, LocalDateTime createdAt) {
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-        this.createdAt = createdAt;
-    }
 }

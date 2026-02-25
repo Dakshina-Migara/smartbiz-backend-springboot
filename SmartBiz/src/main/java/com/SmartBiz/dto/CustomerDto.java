@@ -23,6 +23,7 @@ public class CustomerDto {
 
     private String phone;
     private String address;
+    private Double totalPurchases;
     private LocalDateTime createdAt;
     private Long businessId;
 }

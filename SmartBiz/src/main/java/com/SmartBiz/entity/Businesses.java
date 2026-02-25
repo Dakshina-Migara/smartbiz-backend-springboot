@@ -34,11 +34,4 @@ public class Businesses {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subscription_id")
     private SubscriptionPlan subscription;
-
-    public Businesses(String name, String address, String email, String phone) {
-        this.name = name;
-        this.address = address;
-        this.email = email;
-        this.phone = phone;
-    }
 }
