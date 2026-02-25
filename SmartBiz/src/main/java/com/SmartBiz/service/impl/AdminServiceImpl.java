@@ -95,24 +95,13 @@ public class AdminServiceImpl implements AdminService {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
 
-            // 1. Delete associated AI Requests
-            List<AiRequest> aiRequests = aiRequestRepository.findByBusinessId(businessId);
-            aiRequestRepository.deleteAll(aiRequests);
-
-            // 2. Delete associated Activity Logs
-            List<ActivityLog> activityLogs = activityLogRepository.findByBusinessId(businessId);
-            activityLogRepository.deleteAll(activityLogs);
-
-            // 3. Delete associated Admin (Owner)
-            adminRepository.findByBusinessId(businessId).ifPresent(adminRepository::delete);
-
-            // 4. Finally delete the business
+            // cascades in Businesses entity handle the rest
             businessRepository.delete(business);
-            log.info("Successfully deleted business id: {} and all its associated system-level data", businessId);
+            log.info("Successfully deleted business id: {} and all its associated data via JPA cascades", businessId);
         } catch (Exception e) {
             log.error("Error deleting business id {}: {}", businessId, e.getMessage(), e);
             throw new RuntimeException(
-                    "Failed to delete business. This might be due to existing sales, inventory, or transaction records. Consider suspending the business instead or contact system support.");
+                    "Failed to delete business. This is likely because the business has existing transaction history or records. Consider suspending the business instead.");
         }
     }
 

@@ -38,6 +38,12 @@ public class Sales {
     @JoinColumn(name = "business_id")
     private Businesses business;
 
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<SaleItem> saleItems;
+
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Payment> payments;
+
     @PrePersist
     public void generateInvoiceNumber() {
         if (this.invoiceNumber == null) {
