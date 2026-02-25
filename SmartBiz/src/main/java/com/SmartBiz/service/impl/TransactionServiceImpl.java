@@ -97,7 +97,7 @@ public class TransactionServiceImpl implements TransactionService {
             Transaction transaction = transactionRepository.findById(transactionId)
                     .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + transactionId));
 
-            if (!transaction.getBusiness().getBusiness_id().equals(businessId)) {
+            if (!transaction.getBusiness().getBusinessId().equals(businessId)) {
                 throw new RuntimeException("Unauthorized: Transaction does not belong to this business");
             }
 
@@ -124,7 +124,7 @@ public class TransactionServiceImpl implements TransactionService {
             Transaction transaction = transactionRepository.findById(transactionId)
                     .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + transactionId));
 
-            if (!transaction.getBusiness().getBusiness_id().equals(businessId)) {
+            if (!transaction.getBusiness().getBusinessId().equals(businessId)) {
                 throw new RuntimeException("Unauthorized: Transaction does not belong to this business");
             }
 
@@ -158,7 +158,7 @@ public class TransactionServiceImpl implements TransactionService {
         dto.setDescription(t.getDescription());
         dto.setAmount(t.getAmount());
         dto.setDate(t.getDate());
-        dto.setBusinessId(t.getBusiness().getBusiness_id());
+        dto.setBusinessId(t.getBusiness().getBusinessId());
         return dto;
     }
 }

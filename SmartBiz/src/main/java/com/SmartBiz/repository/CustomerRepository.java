@@ -11,13 +11,13 @@ import java.util.List;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
-    @Query("SELECT c FROM Customer c WHERE c.business.business_id = :businessId")
+    @Query("SELECT c FROM Customer c WHERE c.business.businessId = :businessId")
     List<Customer> findByBusinessId(@Param("businessId") Long businessId);
 
-    @Query("SELECT COUNT(c) FROM Customer c WHERE c.business.business_id = :businessId")
+    @Query("SELECT COUNT(c) FROM Customer c WHERE c.business.businessId = :businessId")
     Long countByBusinessId(@Param("businessId") Long businessId);
 
-    @Query("SELECT c FROM Customer c WHERE c.business.business_id = :businessId " +
+    @Query("SELECT c FROM Customer c WHERE c.business.businessId = :businessId " +
             "AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR c.phone LIKE CONCAT('%', :query, '%'))")

@@ -133,7 +133,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             Inventory inventory = inventoryRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("Inventory not found with id: " + productId));
 
-            if (!inventory.getBusiness().getBusiness_id().equals(businessId)) {
+            if (!inventory.getBusiness().getBusinessId().equals(businessId)) {
                 throw new RuntimeException("Unauthorized: Business mismatch");
             }
 
@@ -153,7 +153,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             Inventory inventory = inventoryRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
 
-            if (!inventory.getBusiness().getBusiness_id().equals(businessId)) {
+            if (!inventory.getBusiness().getBusinessId().equals(businessId)) {
                 throw new RuntimeException("Unauthorized: Business mismatch");
             }
 
@@ -178,7 +178,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             Inventory inventory = inventoryRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
 
-            if (!inventory.getBusiness().getBusiness_id().equals(businessId)) {
+            if (!inventory.getBusiness().getBusinessId().equals(businessId)) {
                 throw new RuntimeException("Unauthorized: Business mismatch");
             }
 
@@ -292,7 +292,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             Inventory inventory = inventoryRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
 
-            if (!inventory.getBusiness().getBusiness_id().equals(businessId)) {
+            if (!inventory.getBusiness().getBusinessId().equals(businessId)) {
                 throw new RuntimeException("Unauthorized: Business mismatch");
             }
 
@@ -410,7 +410,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         dto.setCost(inventory.getCost());
         dto.setStockLevel(inventory.getStockLevel());
         dto.setMinStockLevel(inventory.getMinStockLevel());
-        dto.setBusiness_id(inventory.getBusiness().getBusiness_id());
+        dto.setBusiness_id(inventory.getBusiness().getBusinessId());
 
         if (inventory.getSupplier() != null) {
             dto.setSupplierId(inventory.getSupplier().getSupplierId());
@@ -441,7 +441,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         dto.setPaymentMethod(sale.getPaymentMethod());
         dto.setStatus(sale.getStatus());
         dto.setSaleDate(sale.getSaleDate());
-        dto.setBusiness_id(sale.getBusiness().getBusiness_id());
+        dto.setBusiness_id(sale.getBusiness().getBusinessId());
 
         if (sale.getCustomer() != null) {
             dto.setCustomerId(sale.getCustomer().getCustomerId());

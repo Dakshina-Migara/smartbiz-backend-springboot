@@ -13,6 +13,6 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
 
     List<ActivityLog> findAllByOrderByTimestampDesc();
 
-    @Query("SELECT l FROM ActivityLog l WHERE l.business.business_id = :businessId")
+    @Query("SELECT l FROM ActivityLog l WHERE l.business.businessId = :businessId")
     List<ActivityLog> findByBusinessId(@Param("businessId") Long businessId);
 }
