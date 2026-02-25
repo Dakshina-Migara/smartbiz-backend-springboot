@@ -21,13 +21,13 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-    @PostMapping
+    @PostMapping("/record")
     public ResponseEntity<PaymentDto> recordPayment(@PathVariable Long businessId,
             @Valid @RequestBody PaymentDto dto) {
         return new ResponseEntity<>(paymentService.recordPayment(businessId, dto), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<List<PaymentDto>> getPayments(@PathVariable Long businessId) {
         return ResponseEntity.ok(paymentService.getPaymentsByBusiness(businessId));
     }

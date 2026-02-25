@@ -21,13 +21,13 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<CustomerDto> addCustomer(@PathVariable Long businessId,
             @Valid @RequestBody CustomerDto dto) {
         return new ResponseEntity<>(customerService.addCustomer(businessId, dto), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("/getAllCustomers")
     public ResponseEntity<List<CustomerDto>> getAllCustomers(@PathVariable Long businessId) {
         return ResponseEntity.ok(customerService.getAllCustomers(businessId));
     }

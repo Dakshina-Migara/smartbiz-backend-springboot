@@ -21,13 +21,13 @@ public class InvoiceController {
         this.invoiceService = invoiceService;
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<InvoiceDto> createInvoice(@PathVariable Long businessId,
             @Valid @RequestBody InvoiceDto dto) {
         return new ResponseEntity<>(invoiceService.createInvoice(businessId, dto), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("/getAllInvoices")
     public ResponseEntity<List<InvoiceDto>> getAllInvoices(@PathVariable Long businessId) {
         return ResponseEntity.ok(invoiceService.getAllInvoices(businessId));
     }

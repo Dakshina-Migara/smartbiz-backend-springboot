@@ -22,13 +22,13 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
-    @PostMapping
+    @PostMapping("/addTransaction")
     public ResponseEntity<TransactionDto> addTransaction(@PathVariable Long businessId,
             @Valid @RequestBody TransactionDto dto) {
         return new ResponseEntity<>(transactionService.addTransaction(businessId, dto), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<List<TransactionDto>> getAllTransactions(@PathVariable Long businessId) {
         return ResponseEntity.ok(transactionService.getAllTransactions(businessId));
     }
