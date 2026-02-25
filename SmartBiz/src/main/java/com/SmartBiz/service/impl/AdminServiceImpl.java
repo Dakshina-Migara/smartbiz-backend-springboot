@@ -94,11 +94,25 @@ public class AdminServiceImpl implements AdminService {
         try {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+
+            // 1. Delete associated AI Requests
+            List<AiRequest> aiRequests = aiRequestRepository.findByBusinessId(businessId);
+            aiRequestRepository.deleteAll(aiRequests);
+
+            // 2. Delete associated Activity Logs
+            List<ActivityLog> activityLogs = activityLogRepository.findByBusinessId(businessId);
+            activityLogRepository.deleteAll(activityLogs);
+
+            // 3. Delete associated Admin (Owner)
+            adminRepository.findByBusinessId(businessId).ifPresent(adminRepository::delete);
+
+            // 4. Finally delete the business
             businessRepository.delete(business);
-            log.info("Deleted business id: {}", businessId);
+            log.info("Successfully deleted business id: {} and all its associated system-level data", businessId);
         } catch (Exception e) {
             log.error("Error deleting business id {}: {}", businessId, e.getMessage(), e);
-            throw new RuntimeException("Failed to delete business: " + e.getMessage());
+            throw new RuntimeException(
+                    "Failed to delete business. This might be due to existing sales, inventory, or transaction records. Consider suspending the business instead or contact system support.");
         }
     }
 
@@ -315,6 +329,14 @@ public class AdminServiceImpl implements AdminService {
         try {
             SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Subscription plan not found with id: " + id));
+
+            // Unlink businesses using this plan before deletion
+            List<Businesses> businesses = businessRepository.findBySubscriptionId(id);
+            for (Businesses b : businesses) {
+                b.setSubscription(null);
+                businessRepository.save(b);
+            }
+
             subscriptionPlanRepository.delete(plan);
             log.info("Deleted subscription plan id: {}", id);
         } catch (Exception e) {
