@@ -36,5 +36,5 @@ public class SalesDto {
     private LocalDateTime saleDate;
 
     @NotNull(message = "Business ID is required")
-    private Long business_id;
+    private Long businessId;
 }

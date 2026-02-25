@@ -96,7 +96,6 @@ Clean RESTful endpoints categorized by functionality:
 
 ## 👨‍💻 Project Governance
 Developed by **Dakshina Migara** as part of the SmartBiz AI ERP ecosystem.  
-*Contact: [Your Email/LinkedIn]*
 
 ---
 
