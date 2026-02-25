@@ -97,4 +97,9 @@ public class MobileController {
     public ResponseEntity<List<com.SmartBiz.dto.SalesDto>> getMobileSalesHistory(@PathVariable Long businessId) {
         return ResponseEntity.ok(businessOwnerService.getSalesHistory(businessId));
     }
+
+    @GetMapping("/invoices")
+    public ResponseEntity<List<com.SmartBiz.dto.InvoiceDto>> getMobileInvoices(@PathVariable Long businessId) {
+        return ResponseEntity.ok(invoiceService.getAllInvoices(businessId));
+    }
 }
