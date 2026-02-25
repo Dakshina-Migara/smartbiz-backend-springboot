@@ -33,4 +33,6 @@ public interface BusinessOwnerService {
     void deleteProduct(Long productId, Long businessId);
 
     String generateAiInsight(Long businessId, String prompt);
+
+    SalesDto recordMobileSale(Long businessId, com.SmartBiz.dto.MobileSaleRequestDto dto);
 }

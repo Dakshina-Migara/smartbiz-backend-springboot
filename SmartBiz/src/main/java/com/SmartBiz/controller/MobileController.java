@@ -21,14 +21,17 @@ public class MobileController {
     private final InventoryRepository inventoryRepository;
     private final SalesRepository salesRepository;
     private final BusinessOwnerService businessOwnerService;
+    private final com.SmartBiz.service.InvoiceService invoiceService;
 
     @Autowired
     public MobileController(InventoryRepository inventoryRepository,
             SalesRepository salesRepository,
-            BusinessOwnerService businessOwnerService) {
+            BusinessOwnerService businessOwnerService,
+            com.SmartBiz.service.InvoiceService invoiceService) {
         this.inventoryRepository = inventoryRepository;
         this.salesRepository = salesRepository;
         this.businessOwnerService = businessOwnerService;
+        this.invoiceService = invoiceService;
     }
 
     @GetMapping("/dashboard")
@@ -81,5 +84,17 @@ public class MobileController {
     public ResponseEntity<Void> deleteMobileInventory(@PathVariable Long businessId, @PathVariable Long productId) {
         businessOwnerService.deleteProduct(productId, businessId);
         return ResponseEntity.noContent().build();
+    }
+
+    // Sales Endpoints for Mobile
+    @PostMapping("/sales")
+    public ResponseEntity<com.SmartBiz.dto.SalesDto> recordMobileSale(@PathVariable Long businessId,
+            @Valid @RequestBody com.SmartBiz.dto.MobileSaleRequestDto dto) {
+        return new ResponseEntity<>(businessOwnerService.recordMobileSale(businessId, dto), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/sales")
+    public ResponseEntity<List<com.SmartBiz.dto.SalesDto>> getMobileSalesHistory(@PathVariable Long businessId) {
+        return ResponseEntity.ok(businessOwnerService.getSalesHistory(businessId));
     }
 }
