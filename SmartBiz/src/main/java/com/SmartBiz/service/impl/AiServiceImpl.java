@@ -80,6 +80,12 @@ public class AiServiceImpl implements AiService {
                 Invoice invoice = invoiceRepository.findById(invoiceId)
                                 .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + invoiceId));
 
+                if (!invoice.getBusiness().getBusinessId().equals(businessId)) {
+                        log.warn("Unauthorized access attempt: Business {} tried to access invoice {} belonging to business {}",
+                                        businessId, invoiceId, invoice.getBusiness().getBusinessId());
+                        throw new RuntimeException("Unauthorized: This invoice does not belong to your business");
+                }
+
                 log.info("AI invoice explanation for invoice {}", invoiceId);
                 return String.format("Invoice Explanation:\n\n" +
                                 "Invoice #%s was issued to %s.\n" +

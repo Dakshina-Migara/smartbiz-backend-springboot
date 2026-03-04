@@ -47,11 +47,17 @@ public class InvoiceServiceImpl implements InvoiceService {
             Sales sale = salesRepository.findById(dto.getSaleId())
                     .orElseThrow(() -> new RuntimeException("Sale not found with id: " + dto.getSaleId()));
 
+            if (!sale.getBusiness().getBusinessId().equals(businessId)) {
+                throw new RuntimeException("Unauthorized: Sale does not belong to this business");
+            }
+
             Invoice invoice = new Invoice();
 
+            // Improved unique invoice number generation
             String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-            long count = invoiceRepository.count() + 1;
-            invoice.setInvoiceNumber("INV-" + dateStr + "-" + String.format("%03d", count));
+            String uniqueRef = String.valueOf(System.currentTimeMillis() % 10000);
+            invoice.setInvoiceNumber("INV-" + dateStr + "-" + uniqueRef);
+
             invoice.setCustomerName(dto.getCustomerName());
             invoice.setCustomerEmail(dto.getCustomerEmail());
             invoice.setSale(sale);
@@ -80,13 +86,18 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     @Transactional(readOnly = true)
-    public InvoiceDto getInvoiceById(Long invoiceId) {
+    public InvoiceDto getInvoiceById(Long businessId, Long invoiceId) {
         try {
             Invoice invoice = invoiceRepository.findById(invoiceId)
                     .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + invoiceId));
+
+            if (!invoice.getBusiness().getBusinessId().equals(businessId)) {
+                throw new RuntimeException("Unauthorized: Invoice does not belong to this business");
+            }
+
             return mapToDto(invoice);
         } catch (Exception e) {
-            log.error("Error fetching invoice id {}: {}", invoiceId, e.getMessage(), e);
+            log.error("Error fetching invoice id {} for business {}: {}", invoiceId, businessId, e.getMessage());
             throw new RuntimeException("Failed to fetch invoice: " + e.getMessage());
         }
     }

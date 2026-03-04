@@ -248,8 +248,17 @@ public class AdminServiceImpl implements AdminService {
         dto.setStatus(b.getStatus());
         dto.setRegisteredDate(b.getRegisteredDate());
 
-        adminRepository.findByBusinessId(b.getBusinessId())
-                .ifPresent(owner -> dto.setBusinessOwnerName(owner.getName()));
+        List<Admin> admins = adminRepository.findByBusinessId(b.getBusinessId());
+        admins.stream()
+                .filter(a -> "OWNER".equalsIgnoreCase(a.getRole()))
+                .findFirst()
+                .ifPresentOrElse(
+                        owner -> dto.setBusinessOwnerName(owner.getName()),
+                        () -> {
+                            if (!admins.isEmpty()) {
+                                dto.setBusinessOwnerName(admins.get(0).getName());
+                            }
+                        });
 
         if (b.getSubscription() != null) {
             dto.setPlanName(b.getSubscription().getPlanName());

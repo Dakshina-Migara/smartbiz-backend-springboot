@@ -362,12 +362,6 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             sale.setStatus(dto.getStatus());
             sale.setSaleDate(LocalDateTime.now());
 
-            // Generate invoice number if not set (Sales entity might handle this or we can
-            // do it here)
-            if (sale.getInvoiceNumber() == null) {
-                sale.setInvoiceNumber("INV-" + System.currentTimeMillis() % 1000000);
-            }
-
             Sales savedSale = salesRepository.save(sale);
 
             // 4. Link items to sale and save

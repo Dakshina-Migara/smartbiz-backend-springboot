@@ -47,7 +47,8 @@ public class Sales {
     @PrePersist
     public void generateInvoiceNumber() {
         if (this.invoiceNumber == null) {
-            this.invoiceNumber = UUID.randomUUID().toString().substring(0, 7);
+            this.invoiceNumber = "INV-" + System.currentTimeMillis() % 10000000 + "-"
+                    + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         }
     }
 }
