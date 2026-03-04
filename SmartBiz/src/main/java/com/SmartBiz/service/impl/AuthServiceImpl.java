@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,10 +67,12 @@ public class AuthServiceImpl implements AuthService {
             log.info("Registered new business: {} for owner: {}", business.getName(), admin.getEmail());
 
             String jwtToken = jwtService.generateToken(admin);
-
+            log.info("Generated token for registration: {}", jwtToken);
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Registration successful");
             response.put("token", jwtToken);
+            response.put("expiresIn", jwtService.getExpirationTime());
+            response.put("tokenType", "Bearer");
             response.put("businessId", savedBusiness.getBusinessId());
             response.put("ownerEmail", admin.getEmail());
             return response;
@@ -93,10 +96,12 @@ public class AuthServiceImpl implements AuthService {
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + dto.getEmail()));
 
             String jwtToken = jwtService.generateToken(admin);
-
+            log.info("Generated token for login: {}", jwtToken);
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Login successful");
             response.put("token", jwtToken);
+            response.put("expiresIn", 3600000); // 1 hour in ms
+            response.put("tokenType", "Bearer");
             response.put("adminId", admin.getAdminId());
             response.put("role", admin.getRole());
 
@@ -116,8 +121,11 @@ public class AuthServiceImpl implements AuthService {
             log.info("User {} logged in as {}", admin.getEmail(), admin.getRole());
             return response;
 
+        } catch (AuthenticationException e) {
+            log.error("Login error: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
-            log.error("Login error: {}", e.getMessage(), e);
+            log.error("Unexpected login error: {}", e.getMessage(), e);
             throw new RuntimeException("Login failed: " + e.getMessage());
         }
     }
