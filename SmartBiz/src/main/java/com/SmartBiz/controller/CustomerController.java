@@ -22,33 +22,29 @@ public class CustomerController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<CustomerDto> addCustomer(@PathVariable Long businessId,
-            @Valid @RequestBody CustomerDto dto) {
+    public ResponseEntity<CustomerDto> addCustomer(@PathVariable Long businessId, @Valid @RequestBody CustomerDto dto) {
         return new ResponseEntity<>(customerService.addCustomer(businessId, dto), HttpStatus.CREATED);
     }
 
     @GetMapping("/getAllCustomers")
     public ResponseEntity<List<CustomerDto>> getAllCustomers(@PathVariable Long businessId) {
-        return ResponseEntity.ok(customerService.getAllCustomers(businessId));
+        return new ResponseEntity<>(customerService.getAllCustomers(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<CustomerDto>> searchCustomers(@PathVariable Long businessId,
-            @RequestParam String q) {
-        return ResponseEntity.ok(customerService.searchCustomers(businessId, q));
+    public ResponseEntity<List<CustomerDto>> searchCustomers(@PathVariable Long businessId, @RequestParam String q) {
+        return new ResponseEntity<>(customerService.searchCustomers(businessId, q), HttpStatus.OK);
     }
 
     @PutMapping("/{customerId}")
-    public ResponseEntity<CustomerDto> updateCustomer(@PathVariable Long businessId,
-            @PathVariable Long customerId,
+    public ResponseEntity<CustomerDto> updateCustomer(@PathVariable Long businessId, @PathVariable Long customerId,
             @Valid @RequestBody CustomerDto dto) {
-        return ResponseEntity.ok(customerService.updateCustomer(businessId, customerId, dto));
+        return new ResponseEntity<>(customerService.updateCustomer(businessId, customerId, dto), HttpStatus.OK);
     }
 
     @DeleteMapping("/{customerId}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable Long businessId,
-            @PathVariable Long customerId) {
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Long businessId, @PathVariable Long customerId) {
         customerService.deleteCustomer(businessId, customerId);
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

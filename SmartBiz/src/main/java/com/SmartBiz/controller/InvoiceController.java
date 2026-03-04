@@ -22,19 +22,17 @@ public class InvoiceController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<InvoiceDto> createInvoice(@PathVariable Long businessId,
-            @Valid @RequestBody InvoiceDto dto) {
+    public ResponseEntity<InvoiceDto> createInvoice(@PathVariable Long businessId, @Valid @RequestBody InvoiceDto dto) {
         return new ResponseEntity<>(invoiceService.createInvoice(businessId, dto), HttpStatus.CREATED);
     }
 
     @GetMapping("/getAllInvoices")
     public ResponseEntity<List<InvoiceDto>> getAllInvoices(@PathVariable Long businessId) {
-        return ResponseEntity.ok(invoiceService.getAllInvoices(businessId));
+        return new ResponseEntity<>(invoiceService.getAllInvoices(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/{invoiceId}")
-    public ResponseEntity<InvoiceDto> getInvoiceById(@PathVariable Long businessId,
-            @PathVariable Long invoiceId) {
-        return ResponseEntity.ok(invoiceService.getInvoiceById(businessId, invoiceId));
+    public ResponseEntity<InvoiceDto> getInvoiceById(@PathVariable Long businessId, @PathVariable Long invoiceId) {
+        return new ResponseEntity<>(invoiceService.getInvoiceById(businessId, invoiceId), HttpStatus.OK);
     }
 }

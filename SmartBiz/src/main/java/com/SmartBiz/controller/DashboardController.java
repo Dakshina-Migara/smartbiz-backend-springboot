@@ -5,6 +5,7 @@ import com.SmartBiz.repository.InventoryRepository;
 import com.SmartBiz.repository.PaymentRepository;
 import com.SmartBiz.repository.SalesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,6 +61,6 @@ public class DashboardController {
         var inventory = inventoryRepository.findByBusinessId(businessId);
         kpis.put("totalProducts", inventory.size());
 
-        return ResponseEntity.ok(kpis);
+        return new ResponseEntity<>(kpis, HttpStatus.OK);
     }
 }

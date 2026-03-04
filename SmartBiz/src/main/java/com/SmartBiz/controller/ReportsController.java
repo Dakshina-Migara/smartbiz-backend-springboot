@@ -2,6 +2,7 @@ package com.SmartBiz.controller;
 
 import com.SmartBiz.service.ReportsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,26 +22,26 @@ public class ReportsController {
 
     @GetMapping("/sales-trend")
     public ResponseEntity<List<Map<String, Object>>> getSalesTrend(@PathVariable Long businessId) {
-        return ResponseEntity.ok(reportsService.getSalesTrend(businessId));
+        return new ResponseEntity<>(reportsService.getSalesTrend(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/monthly-overview")
     public ResponseEntity<Map<String, Object>> getMonthlyOverview(@PathVariable Long businessId) {
-        return ResponseEntity.ok(reportsService.getMonthlyOverview(businessId));
+        return new ResponseEntity<>(reportsService.getMonthlyOverview(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/top-products")
     public ResponseEntity<List<Map<String, Object>>> getTopSellingProducts(@PathVariable Long businessId) {
-        return ResponseEntity.ok(reportsService.getTopSellingProducts(businessId));
+        return new ResponseEntity<>(reportsService.getTopSellingProducts(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/expenses-by-category")
     public ResponseEntity<List<Map<String, Object>>> getExpensesByCategory(@PathVariable Long businessId) {
-        return ResponseEntity.ok(reportsService.getExpensesByCategory(businessId));
+        return new ResponseEntity<>(reportsService.getExpensesByCategory(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/low-stock-alerts")
     public ResponseEntity<List<Map<String, Object>>> getLowStockAlerts(@PathVariable Long businessId) {
-        return ResponseEntity.ok(reportsService.getLowStockAlerts(businessId));
+        return new ResponseEntity<>(reportsService.getLowStockAlerts(businessId), HttpStatus.OK);
     }
 }

@@ -22,19 +22,18 @@ public class PaymentController {
     }
 
     @PostMapping("/record")
-    public ResponseEntity<PaymentDto> recordPayment(@PathVariable Long businessId,
-            @Valid @RequestBody PaymentDto dto) {
+    public ResponseEntity<PaymentDto> recordPayment(@PathVariable Long businessId, @Valid @RequestBody PaymentDto dto) {
         return new ResponseEntity<>(paymentService.recordPayment(businessId, dto), HttpStatus.CREATED);
     }
 
     @GetMapping("/getAll")
     public ResponseEntity<List<PaymentDto>> getPayments(@PathVariable Long businessId) {
-        return ResponseEntity.ok(paymentService.getPaymentsByBusiness(businessId));
+        return new ResponseEntity<>(paymentService.getPaymentsByBusiness(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/sale/{saleId}")
     public ResponseEntity<List<PaymentDto>> getPaymentsBySale(@PathVariable Long businessId,
             @PathVariable Long saleId) {
-        return ResponseEntity.ok(paymentService.getPaymentsBySale(saleId));
+        return new ResponseEntity<>(paymentService.getPaymentsBySale(saleId), HttpStatus.OK);
     }
 }

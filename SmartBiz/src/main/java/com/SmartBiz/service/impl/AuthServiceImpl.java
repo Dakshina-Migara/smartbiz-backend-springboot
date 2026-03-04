@@ -7,9 +7,13 @@ import com.SmartBiz.entity.Businesses;
 import com.SmartBiz.exception.ResourceNotFoundException;
 import com.SmartBiz.repository.AdminRepository;
 import com.SmartBiz.repository.BusinessRepository;
+import com.SmartBiz.security.JwtService;
 import com.SmartBiz.service.AuthService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,16 +23,14 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final BusinessRepository businessRepository;
     private final AdminRepository adminRepository;
-
-    @Autowired
-    public AuthServiceImpl(BusinessRepository businessRepository, AdminRepository adminRepository) {
-        this.businessRepository = businessRepository;
-        this.adminRepository = adminRepository;
-    }
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     @Override
     @Transactional
@@ -54,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
             Admin admin = new Admin();
             admin.setName(dto.getOwnerName());
             admin.setEmail(dto.getEmail());
-            admin.setPassword(dto.getPassword()); // In production, hash this!
+            admin.setPassword(passwordEncoder.encode(dto.getPassword()));
             admin.setRole(dto.getRole() != null ? dto.getRole().toUpperCase() : "OWNER");
             admin.setBusiness(savedBusiness);
             admin.setCreatedAt(LocalDateTime.now());
@@ -63,8 +65,11 @@ public class AuthServiceImpl implements AuthService {
 
             log.info("Registered new business: {} for owner: {}", business.getName(), admin.getEmail());
 
+            String jwtToken = jwtService.generateToken(admin);
+
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Registration successful");
+            response.put("token", jwtToken);
             response.put("businessId", savedBusiness.getBusinessId());
             response.put("ownerEmail", admin.getEmail());
             return response;
@@ -79,16 +84,19 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(readOnly = true)
     public Map<String, Object> login(LoginDto dto) {
         try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            dto.getEmail(),
+                            dto.getPassword()));
+
             Admin admin = adminRepository.findByEmail(dto.getEmail())
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + dto.getEmail()));
 
-            // Simple password check (No hashing for now as per user pattern)
-            if (!admin.getPassword().equals(dto.getPassword())) {
-                throw new RuntimeException("Invalid password");
-            }
+            String jwtToken = jwtService.generateToken(admin);
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Login successful");
+            response.put("token", jwtToken);
             response.put("adminId", admin.getAdminId());
             response.put("role", admin.getRole());
 
@@ -108,8 +116,6 @@ public class AuthServiceImpl implements AuthService {
             log.info("User {} logged in as {}", admin.getEmail(), admin.getRole());
             return response;
 
-        } catch (ResourceNotFoundException e) {
-            throw e;
         } catch (Exception e) {
             log.error("Login error: {}", e.getMessage(), e);
             throw new RuntimeException("Login failed: " + e.getMessage());

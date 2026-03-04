@@ -27,82 +27,69 @@ public class AdminController {
 
     @GetMapping("/businesses")
     public ResponseEntity<List<BusinessesDto>> getAllBusinesses() {
-        List<BusinessesDto> businesses = adminService.findAllBusinesses();
-        return ResponseEntity.ok(businesses);
+        return new ResponseEntity<>(adminService.findAllBusinesses(), HttpStatus.OK);
     }
 
     @GetMapping("/businesses/search")
     public ResponseEntity<List<BusinessesDto>> searchBusinesses(@RequestParam String q) {
-        List<BusinessesDto> results = adminService.searchBusinesses(q);
-        return ResponseEntity.ok(results);
+        return new ResponseEntity<>(adminService.searchBusinesses(q), HttpStatus.OK);
     }
 
     @PutMapping("/businesses/{id}/suspend")
     public ResponseEntity<BusinessesDto> suspendBusiness(@PathVariable Long id) {
-        BusinessesDto suspended = adminService.suspendBusiness(id);
-        return ResponseEntity.ok(suspended);
+        return new ResponseEntity<>(adminService.suspendBusiness(id), HttpStatus.OK);
     }
 
     @PutMapping("/businesses/{id}/activate")
     public ResponseEntity<BusinessesDto> activateBusiness(@PathVariable Long id) {
-        BusinessesDto activated = adminService.activateBusiness(id);
-        return ResponseEntity.ok(activated);
+        return new ResponseEntity<>(adminService.activateBusiness(id), HttpStatus.OK);
     }
 
     @DeleteMapping("/businesses/{id}")
     public ResponseEntity<Void> deleteBusiness(@PathVariable Long id) {
         adminService.deleteBusiness(id);
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/logs/ai")
     public ResponseEntity<List<AIRequestDto>> getAiUsageLogs() {
-        List<AIRequestDto> logs = adminService.getGlobalAiLogs();
-        return ResponseEntity.ok(logs);
+        return new ResponseEntity<>(adminService.getGlobalAiLogs(), HttpStatus.OK);
     }
 
     @GetMapping("/logs/activity")
     public ResponseEntity<List<ActivityLogDto>> getActivityLogs() {
-        List<ActivityLogDto> logs = adminService.getActivityLogs();
-        return ResponseEntity.ok(logs);
+        return new ResponseEntity<>(adminService.getActivityLogs(), HttpStatus.OK);
     }
 
     @GetMapping("/subscriptions")
     public ResponseEntity<List<SubscriptionPlanDto>> getAllPlans() {
-        List<SubscriptionPlanDto> plans = adminService.getAllSubscriptionPlans();
-        return ResponseEntity.ok(plans);
+        return new ResponseEntity<>(adminService.getAllSubscriptionPlans(), HttpStatus.OK);
     }
 
     @PostMapping("/subscriptions/create")
-    public ResponseEntity<SubscriptionPlanDto> createPlan(
-            @Valid @RequestBody SubscriptionPlanDto planDto) {
-        SubscriptionPlanDto createdPlan = adminService.createSubscriptionPlan(planDto);
-        return new ResponseEntity<>(createdPlan, HttpStatus.CREATED);
+    public ResponseEntity<SubscriptionPlanDto> createPlan(@Valid @RequestBody SubscriptionPlanDto planDto) {
+        return new ResponseEntity<>(adminService.createSubscriptionPlan(planDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/subscriptions/{id}")
-    public ResponseEntity<SubscriptionPlanDto> updatePlan(
-            @PathVariable Long id,
+    public ResponseEntity<SubscriptionPlanDto> updatePlan(@PathVariable Long id,
             @Valid @RequestBody SubscriptionPlanDto planDto) {
-        SubscriptionPlanDto updatedPlan = adminService.updateSubscriptionPlan(id, planDto);
-        return ResponseEntity.ok(updatedPlan);
+        return new ResponseEntity<>(adminService.updateSubscriptionPlan(id, planDto), HttpStatus.OK);
     }
 
     @DeleteMapping("/subscriptions/{id}")
     public ResponseEntity<Void> deletePlan(@PathVariable Long id) {
         adminService.deleteSubscriptionPlan(id);
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/statistics")
     public ResponseEntity<Map<String, Object>> getSystemStats() {
-        Map<String, Object> statistics = adminService.getSystemWideStatus();
-        return ResponseEntity.ok(statistics);
+        return new ResponseEntity<>(adminService.getSystemWideStatus(), HttpStatus.OK);
     }
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
-        Map<String, Object> dashboard = adminService.getDashboardStats();
-        return ResponseEntity.ok(dashboard);
+        return new ResponseEntity<>(adminService.getDashboardStats(), HttpStatus.OK);
     }
 }
