@@ -22,9 +22,12 @@ public class AiInsightController {
         this.aiInsightService = aiInsightService;
     }
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AiInsightController.class);
+
     @PostMapping("/generate")
     public ResponseEntity<AiInsightResponseDto> generateInsight(@PathVariable Long businessId,
             @Valid @RequestBody AiInsightRequestDto request) {
+        log.info("Generating AI insight for business id: {} with type: {}", businessId, request.getType());
         request.setBusinessId(businessId);
         return new ResponseEntity<>(aiInsightService.generateInsight(request), HttpStatus.OK);
     }
@@ -38,7 +41,10 @@ public class AiInsightController {
     }
 
     @GetMapping("/quick-questions")
-    public ResponseEntity<List<String>> getQuickQuestions(@RequestParam String type) {
-        return new ResponseEntity<>(aiInsightService.getQuickQuestions(type), HttpStatus.OK);
+    public ResponseEntity<List<String>> getQuickQuestions(
+            @PathVariable Long businessId,
+            @RequestParam String type) {
+        List<String> questions = aiInsightService.getQuickQuestions(type);
+        return new ResponseEntity<>(questions, HttpStatus.OK);
     }
 }
