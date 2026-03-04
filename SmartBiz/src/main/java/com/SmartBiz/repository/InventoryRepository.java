@@ -37,4 +37,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
         @Query("SELECT i FROM Inventory i WHERE i.business.businessId = :businessId " +
                         "AND (i.minStockLevel IS NULL OR i.stockLevel > i.minStockLevel)")
         List<Inventory> findInStockByBusinessId(@Param("businessId") Long businessId);
+
+        @Query("SELECT COUNT(i) FROM Inventory i WHERE i.business.businessId = :businessId")
+        Long countByBusinessId(@Param("businessId") Long businessId);
 }

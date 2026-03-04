@@ -33,4 +33,7 @@ public interface SalesRepository extends JpaRepository<Sales, Long> {
                         "WHERE business_id = :businessId " +
                         "AND MONTH(sale_date) = MONTH(CURDATE()) AND YEAR(sale_date) = YEAR(CURDATE())", nativeQuery = true)
         Double sumCurrentMonthRevenue(@Param("businessId") Long businessId);
+
+        @Query("SELECT COUNT(s) FROM Sales s WHERE s.business.businessId = :businessId")
+        Long countByBusinessId(@Param("businessId") Long businessId);
 }

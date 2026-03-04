@@ -84,7 +84,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching inventory for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to fetch inventory: " + e.getMessage());
         }
     }
 
@@ -98,7 +98,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error searching inventory for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to search inventory: " + e.getMessage());
         }
     }
 
@@ -123,7 +123,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             return items.stream().map(this::mapToInventoryDto).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error filtering inventory for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to filter inventory: " + e.getMessage());
         }
     }
 
@@ -269,7 +269,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching sales history for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to fetch sales history: " + e.getMessage());
         }
     }
 
@@ -283,7 +283,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error searching sales for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to search sales: " + e.getMessage());
         }
     }
 

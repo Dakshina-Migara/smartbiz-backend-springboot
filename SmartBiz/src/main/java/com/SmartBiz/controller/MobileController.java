@@ -1,9 +1,9 @@
 package com.SmartBiz.controller;
 
 import com.SmartBiz.dto.InventoryDto;
-import com.SmartBiz.repository.InventoryRepository;
-import com.SmartBiz.repository.SalesRepository;
 import com.SmartBiz.service.BusinessOwnerService;
+import com.SmartBiz.service.DashboardService;
+import com.SmartBiz.service.InvoiceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,38 +18,28 @@ import java.util.Map;
 @RequestMapping("/api/v1/mobile/{businessId}")
 public class MobileController {
 
-    private final InventoryRepository inventoryRepository;
-    private final SalesRepository salesRepository;
     private final BusinessOwnerService businessOwnerService;
-    private final com.SmartBiz.service.InvoiceService invoiceService;
+    private final InvoiceService invoiceService;
+    private final DashboardService dashboardService;
 
     @Autowired
-    public MobileController(InventoryRepository inventoryRepository,
-            SalesRepository salesRepository,
-            BusinessOwnerService businessOwnerService,
-            com.SmartBiz.service.InvoiceService invoiceService) {
-        this.inventoryRepository = inventoryRepository;
-        this.salesRepository = salesRepository;
+    public MobileController(BusinessOwnerService businessOwnerService,
+            InvoiceService invoiceService,
+            DashboardService dashboardService) {
         this.businessOwnerService = businessOwnerService;
         this.invoiceService = invoiceService;
+        this.dashboardService = dashboardService;
     }
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getMobileDashboard(@PathVariable Long businessId) {
+        Map<String, Object> kpis = dashboardService.getKPIs(businessId);
         Map<String, Object> data = new LinkedHashMap<>();
 
-        long totalProducts = inventoryRepository.findByBusinessId(businessId).size();
-        var sales = salesRepository.findByBusinessIdOrderBySaleDateDesc(businessId);
-        long totalSales = sales.size();
-        double revenue = sales.stream()
-                .mapToDouble(s -> s.getTotalAmount() != null ? s.getTotalAmount() : 0)
-                .sum();
-        long lowStockItems = inventoryRepository.countLowStock(businessId);
-
-        data.put("totalProducts", totalProducts);
-        data.put("totalSales", totalSales);
-        data.put("revenue", revenue);
-        data.put("lowStockItems", lowStockItems);
+        data.put("totalProducts", kpis.get("totalProducts"));
+        data.put("totalSales", kpis.get("salesCount"));
+        data.put("revenue", kpis.get("totalRevenue"));
+        data.put("lowStockItems", kpis.get("lowStockAlerts"));
 
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
@@ -74,7 +64,8 @@ public class MobileController {
 
     @PutMapping("/inventory/{productId}")
     public ResponseEntity<InventoryDto> updateMobileInventory(@PathVariable Long businessId,
-            @PathVariable Long productId, @Valid @RequestBody InventoryDto dto) {
+            @PathVariable Long productId,
+            @Valid @RequestBody InventoryDto dto) {
         return new ResponseEntity<>(businessOwnerService.updateProduct(productId, dto, businessId), HttpStatus.OK);
     }
 
