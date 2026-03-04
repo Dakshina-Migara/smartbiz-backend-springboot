@@ -8,5 +8,5 @@ public interface InvoiceService {
 
     List<InvoiceDto> getAllInvoices(Long businessId);
 
-    InvoiceDto getInvoiceById(Long invoiceId);
+    InvoiceDto getInvoiceById(Long businessId, Long invoiceId);
 }
