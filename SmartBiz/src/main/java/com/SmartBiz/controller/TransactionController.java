@@ -30,37 +30,35 @@ public class TransactionController {
 
     @GetMapping("/getAll")
     public ResponseEntity<List<TransactionDto>> getAllTransactions(@PathVariable Long businessId) {
-        return ResponseEntity.ok(transactionService.getAllTransactions(businessId));
+        return new ResponseEntity<>(transactionService.getAllTransactions(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<TransactionDto>> searchTransactions(@PathVariable Long businessId,
             @RequestParam String q) {
-        return ResponseEntity.ok(transactionService.searchTransactions(businessId, q));
+        return new ResponseEntity<>(transactionService.searchTransactions(businessId, q), HttpStatus.OK);
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<TransactionDto>> filterByType(@PathVariable Long businessId,
-            @RequestParam String type) {
-        return ResponseEntity.ok(transactionService.filterByType(businessId, type));
+    public ResponseEntity<List<TransactionDto>> filterByType(@PathVariable Long businessId, @RequestParam String type) {
+        return new ResponseEntity<>(transactionService.filterByType(businessId, type), HttpStatus.OK);
     }
 
     @GetMapping("/summary")
     public ResponseEntity<Map<String, Object>> getTransactionSummary(@PathVariable Long businessId) {
-        return ResponseEntity.ok(transactionService.getTransactionSummary(businessId));
+        return new ResponseEntity<>(transactionService.getTransactionSummary(businessId), HttpStatus.OK);
     }
 
     @PutMapping("/{transactionId}")
     public ResponseEntity<TransactionDto> updateTransaction(@PathVariable Long businessId,
-            @PathVariable Long transactionId,
-            @Valid @RequestBody TransactionDto dto) {
-        return ResponseEntity.ok(transactionService.updateTransaction(businessId, transactionId, dto));
+            @PathVariable Long transactionId, @Valid @RequestBody TransactionDto dto) {
+        return new ResponseEntity<>(transactionService.updateTransaction(businessId, transactionId, dto),
+                HttpStatus.OK);
     }
 
     @DeleteMapping("/{transactionId}")
-    public ResponseEntity<Void> deleteTransaction(@PathVariable Long businessId,
-            @PathVariable Long transactionId) {
+    public ResponseEntity<Void> deleteTransaction(@PathVariable Long businessId, @PathVariable Long transactionId) {
         transactionService.deleteTransaction(businessId, transactionId);
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

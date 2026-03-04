@@ -25,73 +25,65 @@ public class BusinessOwnerController {
 
     @PostMapping("/inventory")
     public ResponseEntity<InventoryDto> addInventory(@Valid @RequestBody InventoryDto dto) {
-        InventoryDto created = service.addInventory(dto);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        return new ResponseEntity<>(service.addInventory(dto), HttpStatus.CREATED);
     }
 
     @GetMapping("/{businessId}/inventory")
     public ResponseEntity<List<InventoryDto>> getAllInventory(@PathVariable Long businessId) {
-        return ResponseEntity.ok(service.getAllInventory(businessId));
+        return new ResponseEntity<>(service.getAllInventory(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/{businessId}/inventory/search")
-    public ResponseEntity<List<InventoryDto>> searchInventory(@PathVariable Long businessId,
-            @RequestParam String q) {
-        return ResponseEntity.ok(service.searchInventory(businessId, q));
+    public ResponseEntity<List<InventoryDto>> searchInventory(@PathVariable Long businessId, @RequestParam String q) {
+        return new ResponseEntity<>(service.searchInventory(businessId, q), HttpStatus.OK);
     }
 
     @GetMapping("/{businessId}/inventory/filter")
     public ResponseEntity<List<InventoryDto>> filterInventory(@PathVariable Long businessId,
             @RequestParam String status) {
-        return ResponseEntity.ok(service.filterInventoryByStatus(businessId, status));
+        return new ResponseEntity<>(service.filterInventoryByStatus(businessId, status), HttpStatus.OK);
     }
 
     @GetMapping("/{businessId}/inventory/stats")
     public ResponseEntity<Map<String, Object>> getInventoryStats(@PathVariable Long businessId) {
-        return ResponseEntity.ok(service.getInventoryStats(businessId));
+        return new ResponseEntity<>(service.getInventoryStats(businessId), HttpStatus.OK);
     }
 
     @PutMapping("/{businessId}/inventory/{productId}")
-    public ResponseEntity<InventoryDto> updateStock(@PathVariable Long businessId,
-            @PathVariable Long productId,
+    public ResponseEntity<InventoryDto> updateStock(@PathVariable Long businessId, @PathVariable Long productId,
             @RequestParam Integer quantity) {
-        return ResponseEntity.ok(service.updateStock(productId, quantity, businessId));
+        return new ResponseEntity<>(service.updateStock(productId, quantity, businessId), HttpStatus.OK);
     }
 
     @PutMapping("/{businessId}/inventory/{productId}/edit")
-    public ResponseEntity<InventoryDto> updateProduct(@PathVariable Long businessId,
-            @PathVariable Long productId,
+    public ResponseEntity<InventoryDto> updateProduct(@PathVariable Long businessId, @PathVariable Long productId,
             @Valid @RequestBody InventoryDto dto) {
-        return ResponseEntity.ok(service.updateProduct(productId, dto, businessId));
+        return new ResponseEntity<>(service.updateProduct(productId, dto, businessId), HttpStatus.OK);
     }
 
     @PostMapping("/sales")
     public ResponseEntity<SalesDto> recordSale(@Valid @RequestBody SalesDto dto) {
-        SalesDto created = service.recordSale(dto);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        return new ResponseEntity<>(service.recordSale(dto), HttpStatus.CREATED);
     }
 
     @GetMapping("/{businessId}/sales")
     public ResponseEntity<List<SalesDto>> getSalesHistory(@PathVariable Long businessId) {
-        return ResponseEntity.ok(service.getSalesHistory(businessId));
+        return new ResponseEntity<>(service.getSalesHistory(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/{businessId}/sales/search")
-    public ResponseEntity<List<SalesDto>> searchSales(@PathVariable Long businessId,
-            @RequestParam String q) {
-        return ResponseEntity.ok(service.searchSales(businessId, q));
+    public ResponseEntity<List<SalesDto>> searchSales(@PathVariable Long businessId, @RequestParam String q) {
+        return new ResponseEntity<>(service.searchSales(businessId, q), HttpStatus.OK);
     }
 
     @DeleteMapping("/{businessId}/inventory/{productId}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long businessId,
-            @PathVariable Long productId) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long businessId, @PathVariable Long productId) {
         service.deleteProduct(productId, businessId);
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/{businessId}/ai-insight")
-    public ResponseEntity<String> generateAiInsight(@PathVariable Long businessId,
-            @RequestBody String prompt) {
-        return ResponseEntity.ok(service.generateAiInsight(businessId, prompt));
+    public ResponseEntity<String> generateAiInsight(@PathVariable Long businessId, @RequestBody String prompt) {
+        return new ResponseEntity<>(service.generateAiInsight(businessId, prompt), HttpStatus.OK);
     }
 }

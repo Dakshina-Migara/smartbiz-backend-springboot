@@ -2,6 +2,7 @@ package com.SmartBiz.controller;
 
 import com.SmartBiz.service.AiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,25 +22,22 @@ public class AiController {
     @PostMapping("/query")
     public ResponseEntity<Map<String, String>> queryData(@PathVariable Long businessId,
             @RequestBody Map<String, String> request) {
-        String prompt = request.getOrDefault("prompt", "");
-        String result = aiService.queryData(businessId, prompt);
-        return ResponseEntity.ok(Map.of("response", result));
+        String result = aiService.queryData(businessId, request.getOrDefault("prompt", ""));
+        return new ResponseEntity<>(Map.of("response", result), HttpStatus.OK);
     }
 
     @PostMapping("/generate-email")
     public ResponseEntity<Map<String, String>> generateEmail(@PathVariable Long businessId,
             @RequestBody Map<String, String> request) {
-        String prompt = request.getOrDefault("prompt", "");
-        String result = aiService.generateEmail(businessId, prompt);
-        return ResponseEntity.ok(Map.of("response", result));
+        String result = aiService.generateEmail(businessId, request.getOrDefault("prompt", ""));
+        return new ResponseEntity<>(Map.of("response", result), HttpStatus.OK);
     }
 
     @PostMapping("/generate-post")
     public ResponseEntity<Map<String, String>> generatePost(@PathVariable Long businessId,
             @RequestBody Map<String, String> request) {
-        String prompt = request.getOrDefault("prompt", "");
-        String result = aiService.generatePost(businessId, prompt);
-        return ResponseEntity.ok(Map.of("response", result));
+        String result = aiService.generatePost(businessId, request.getOrDefault("prompt", ""));
+        return new ResponseEntity<>(Map.of("response", result), HttpStatus.OK);
     }
 
     @PostMapping("/explain-invoice")
@@ -47,6 +45,6 @@ public class AiController {
             @RequestBody Map<String, String> request) {
         Long invoiceId = Long.parseLong(request.getOrDefault("invoiceId", "0"));
         String result = aiService.explainInvoice(businessId, invoiceId);
-        return ResponseEntity.ok(Map.of("response", result));
+        return new ResponseEntity<>(Map.of("response", result), HttpStatus.OK);
     }
 }
