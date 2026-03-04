@@ -41,6 +41,7 @@ public class AiController {
     }
 
     @PostMapping("/explain-invoice")
+
     public ResponseEntity<Map<String, String>> explainInvoice(@PathVariable Long businessId,
             @RequestBody Map<String, String> request) {
         Long invoiceId = Long.parseLong(request.getOrDefault("invoiceId", "0"));

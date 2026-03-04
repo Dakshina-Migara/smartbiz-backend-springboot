@@ -110,22 +110,33 @@ public class AiInsightServiceImpl implements AiInsightService {
 
     @Override
     public List<String> getQuickQuestions(String type) {
-        switch (type.toLowerCase()) {
+        if (type == null)
+            return Collections.emptyList();
+
+        String cleanType = type.toLowerCase().replace("-", "_").trim();
+
+        switch (cleanType) {
             case "business_report":
+            case "report":
+            case "business":
                 return List.of("Top Products", "Profit Analysis", "Stock Status",
                         "How did I perform last month?", "What are my best selling items?");
             case "email":
+            case "messaging":
                 return List.of("Thank a customer for their purchase",
                         "Follow up on a pending payment",
                         "Announce a new product launch",
                         "Request feedback from a customer");
             case "marketing":
+            case "social":
+            case "post":
                 return List.of("Announce a seasonal sale",
                         "Promote our top-selling product",
                         "Share a customer success story",
                         "Create a post about new arrivals");
             default:
-                return Collections.emptyList();
+                log.warn("Unknown quick question type requested: {}", type);
+                return List.of("How can I improve my business?", "General business advice", "System help");
         }
     }
 

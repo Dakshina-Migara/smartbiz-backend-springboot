@@ -28,6 +28,5 @@ public class PaymentDto {
     @NotNull(message = "Sale ID is required")
     private Long saleId;
 
-    @NotNull(message = "Business ID is required")
     private Long businessId;
 }

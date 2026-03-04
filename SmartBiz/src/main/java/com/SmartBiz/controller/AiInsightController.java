@@ -38,7 +38,10 @@ public class AiInsightController {
     }
 
     @GetMapping("/quick-questions")
-    public ResponseEntity<List<String>> getQuickQuestions(@RequestParam String type) {
-        return new ResponseEntity<>(aiInsightService.getQuickQuestions(type), HttpStatus.OK);
+    public ResponseEntity<List<String>> getQuickQuestions(
+            @PathVariable Long businessId,
+            @RequestParam String type) {
+        List<String> questions = aiInsightService.getQuickQuestions(type);
+        return new ResponseEntity<>(questions, HttpStatus.OK);
     }
 }
