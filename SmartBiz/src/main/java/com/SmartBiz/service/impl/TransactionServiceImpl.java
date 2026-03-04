@@ -141,8 +141,15 @@ public class TransactionServiceImpl implements TransactionService {
     public Map<String, Object> getTransactionSummary(Long businessId) {
         try {
             Map<String, Object> summary = new LinkedHashMap<>();
-            summary.put("totalIncome", transactionRepository.sumIncomeByBusinessId(businessId));
-            summary.put("totalExpenses", transactionRepository.sumExpensesByBusinessId(businessId));
+            Double income = transactionRepository.sumIncomeByBusinessId(businessId);
+            Double expenses = transactionRepository.sumExpensesByBusinessId(businessId);
+
+            double incomeVal = income != null ? income : 0.0;
+            double expensesVal = expenses != null ? expenses : 0.0;
+
+            summary.put("totalIncome", incomeVal);
+            summary.put("totalExpenses", expensesVal);
+            summary.put("balance", incomeVal - expensesVal);
             return summary;
         } catch (Exception e) {
             log.error("Error fetching transaction summary for business id {}: {}", businessId, e.getMessage(), e);
