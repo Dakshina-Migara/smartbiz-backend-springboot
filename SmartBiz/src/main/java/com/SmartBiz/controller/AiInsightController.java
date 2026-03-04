@@ -5,6 +5,7 @@ import com.SmartBiz.dto.AiInsightResponseDto;
 import com.SmartBiz.service.AiInsightService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,20 +26,19 @@ public class AiInsightController {
     public ResponseEntity<AiInsightResponseDto> generateInsight(@PathVariable Long businessId,
             @Valid @RequestBody AiInsightRequestDto request) {
         request.setBusinessId(businessId);
-        return ResponseEntity.ok(aiInsightService.generateInsight(request));
+        return new ResponseEntity<>(aiInsightService.generateInsight(request), HttpStatus.OK);
     }
 
     @GetMapping("/history")
     public ResponseEntity<List<AiInsightResponseDto>> getHistory(@PathVariable Long businessId,
             @RequestParam(required = false) String type) {
-        if (type != null) {
-            return ResponseEntity.ok(aiInsightService.getHistoryByType(businessId, type));
-        }
-        return ResponseEntity.ok(aiInsightService.getHistory(businessId));
+        List<AiInsightResponseDto> history = (type != null) ? aiInsightService.getHistoryByType(businessId, type)
+                : aiInsightService.getHistory(businessId);
+        return new ResponseEntity<>(history, HttpStatus.OK);
     }
 
     @GetMapping("/quick-questions")
     public ResponseEntity<List<String>> getQuickQuestions(@RequestParam String type) {
-        return ResponseEntity.ok(aiInsightService.getQuickQuestions(type));
+        return new ResponseEntity<>(aiInsightService.getQuickQuestions(type), HttpStatus.OK);
     }
 }

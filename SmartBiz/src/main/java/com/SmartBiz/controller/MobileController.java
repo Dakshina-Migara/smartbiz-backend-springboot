@@ -51,18 +51,18 @@ public class MobileController {
         data.put("revenue", revenue);
         data.put("lowStockItems", lowStockItems);
 
-        return ResponseEntity.ok(data);
+        return new ResponseEntity<>(data, HttpStatus.OK);
     }
 
     @GetMapping("/inventory")
     public ResponseEntity<List<InventoryDto>> getMobileInventory(@PathVariable Long businessId) {
-        return ResponseEntity.ok(businessOwnerService.getAllInventory(businessId));
+        return new ResponseEntity<>(businessOwnerService.getAllInventory(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/inventory/search")
     public ResponseEntity<List<InventoryDto>> searchMobileInventory(@PathVariable Long businessId,
             @RequestParam String q) {
-        return ResponseEntity.ok(businessOwnerService.searchInventory(businessId, q));
+        return new ResponseEntity<>(businessOwnerService.searchInventory(businessId, q), HttpStatus.OK);
     }
 
     @PostMapping("/inventory")
@@ -75,13 +75,13 @@ public class MobileController {
     @PutMapping("/inventory/{productId}")
     public ResponseEntity<InventoryDto> updateMobileInventory(@PathVariable Long businessId,
             @PathVariable Long productId, @Valid @RequestBody InventoryDto dto) {
-        return ResponseEntity.ok(businessOwnerService.updateProduct(productId, dto, businessId));
+        return new ResponseEntity<>(businessOwnerService.updateProduct(productId, dto, businessId), HttpStatus.OK);
     }
 
     @DeleteMapping("/inventory/{productId}")
     public ResponseEntity<Void> deleteMobileInventory(@PathVariable Long businessId, @PathVariable Long productId) {
         businessOwnerService.deleteProduct(productId, businessId);
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/sales")
@@ -92,11 +92,11 @@ public class MobileController {
 
     @GetMapping("/sales")
     public ResponseEntity<List<com.SmartBiz.dto.SalesDto>> getMobileSalesHistory(@PathVariable Long businessId) {
-        return ResponseEntity.ok(businessOwnerService.getSalesHistory(businessId));
+        return new ResponseEntity<>(businessOwnerService.getSalesHistory(businessId), HttpStatus.OK);
     }
 
     @GetMapping("/invoices")
     public ResponseEntity<List<com.SmartBiz.dto.InvoiceDto>> getMobileInvoices(@PathVariable Long businessId) {
-        return ResponseEntity.ok(invoiceService.getAllInvoices(businessId));
+        return new ResponseEntity<>(invoiceService.getAllInvoices(businessId), HttpStatus.OK);
     }
 }
