@@ -41,6 +41,5 @@ public class InventoryDto {
 
     private String supplierName;
 
-    @NotNull(message = "Business ID is required")
     private Long businessId;
 }

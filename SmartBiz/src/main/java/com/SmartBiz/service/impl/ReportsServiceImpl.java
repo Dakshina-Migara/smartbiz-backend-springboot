@@ -49,7 +49,7 @@ public class ReportsServiceImpl implements ReportsService {
             }).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching sales trend for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to get sales trend: " + e.getMessage());
         }
     }
 
@@ -68,7 +68,7 @@ public class ReportsServiceImpl implements ReportsService {
             return overview;
         } catch (Exception e) {
             log.error("Error fetching monthly overview for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyMap();
+            throw new RuntimeException("Failed to get monthly overview: " + e.getMessage());
         }
     }
 
@@ -84,7 +84,7 @@ public class ReportsServiceImpl implements ReportsService {
             }).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching top selling products for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to get top selling products: " + e.getMessage());
         }
     }
 
@@ -100,7 +100,7 @@ public class ReportsServiceImpl implements ReportsService {
             }).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching expenses by category for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to get expenses by category: " + e.getMessage());
         }
     }
 
@@ -123,7 +123,7 @@ public class ReportsServiceImpl implements ReportsService {
             }).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching low stock alerts for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to get low stock alerts: " + e.getMessage());
         }
     }
 }

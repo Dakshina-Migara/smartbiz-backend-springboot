@@ -17,9 +17,12 @@ public class AiRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long requestId;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String prompt;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String response;
 
     private String type;

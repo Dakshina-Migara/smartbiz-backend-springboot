@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,7 +60,7 @@ public class CustomerServiceImpl implements CustomerService {
                     .stream().map(this::mapToDto).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching customers for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to fetch customers: " + e.getMessage());
         }
     }
 
@@ -73,7 +72,7 @@ public class CustomerServiceImpl implements CustomerService {
                     .stream().map(this::mapToDto).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error searching customers for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to search customers: " + e.getMessage());
         }
     }
 
