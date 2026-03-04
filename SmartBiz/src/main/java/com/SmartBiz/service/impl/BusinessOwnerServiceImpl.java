@@ -311,10 +311,13 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
 
-            // 1. Find or create customer
-            Customer customer = customerRepository.findByBusinessId(businessId).stream()
-                    .filter(c -> c.getName().equalsIgnoreCase(dto.getCustomerName()))
-                    .findFirst()
+            // Fault 3 Fix: Null check on customerName
+            if (dto.getCustomerName() == null || dto.getCustomerName().trim().isEmpty()) {
+                throw new RuntimeException("Customer name is required for mobile sale");
+            }
+
+            // Fault 1 Fix: Use optimized DB query instead of loading all customers
+            Customer customer = customerRepository.findByBusinessIdAndNameIgnoreCase(businessId, dto.getCustomerName())
                     .orElseGet(() -> {
                         Customer newCustomer = new Customer();
                         newCustomer.setName(dto.getCustomerName());
@@ -325,7 +328,8 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                         return customerRepository.save(newCustomer);
                     });
 
-            // 2. Process sale items and calculate total
+            // Fault 2 Fix: VALIDATE all stock first before any writes
+            List<Inventory> inventoriesToUpdate = new ArrayList<>();
             double totalAmount = 0;
             int totalQty = 0;
             List<SaleItem> saleItems = new ArrayList<>();
@@ -335,12 +339,9 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                         .orElseThrow(() -> new RuntimeException("Product not found: " + itemDto.getProductId()));
 
                 if (inventory.getStockLevel() < itemDto.getQty()) {
-                    throw new RuntimeException("Insufficient stock for product: " + inventory.getProductName());
+                    throw new RuntimeException("Insufficient stock for product: " + inventory.getProductName()
+                            + " (available: " + inventory.getStockLevel() + ", requested: " + itemDto.getQty() + ")");
                 }
-
-                // Deduct stock
-                inventory.setStockLevel(inventory.getStockLevel() - itemDto.getQty());
-                inventoryRepository.save(inventory);
 
                 SaleItem saleItem = new SaleItem();
                 saleItem.setProduct(inventory);
@@ -350,9 +351,14 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                 totalAmount += (itemDto.getPrice() * itemDto.getQty());
                 totalQty += itemDto.getQty();
                 saleItems.add(saleItem);
+
+                // Prepare stock deduction but don't save yet
+                inventory.setStockLevel(inventory.getStockLevel() - itemDto.getQty());
+                inventoriesToUpdate.add(inventory);
             }
 
-            // 3. Save Sale
+            // Now that ALL validations passed, save everything together
+            // 1. Save Sale first
             Sales sale = new Sales();
             sale.setBusiness(business);
             sale.setCustomer(customer);
@@ -364,13 +370,18 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
             Sales savedSale = salesRepository.save(sale);
 
-            // 4. Link items to sale and save
+            // 2. Link and save sale items
             for (SaleItem si : saleItems) {
                 si.setSale(savedSale);
                 saleItemRepository.save(si);
             }
 
-            // 5. Update customer total purchases
+            // 3. Deduct stock (after sale is confirmed)
+            for (Inventory inv : inventoriesToUpdate) {
+                inventoryRepository.save(inv);
+            }
+
+            // 4. Update customer total purchases
             customer.setTotalPurchases(customer.getTotalPurchases() + totalAmount);
             customerRepository.save(customer);
 

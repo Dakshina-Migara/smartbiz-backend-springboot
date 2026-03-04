@@ -22,4 +22,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             "OR LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR c.phone LIKE CONCAT('%', :query, '%'))")
     List<Customer> searchByBusinessId(@Param("businessId") Long businessId, @Param("query") String query);
+
+    @Query("SELECT c FROM Customer c WHERE c.business.businessId = :businessId AND LOWER(c.name) = LOWER(:name)")
+    java.util.Optional<Customer> findByBusinessIdAndNameIgnoreCase(@Param("businessId") Long businessId,
+            @Param("name") String name);
 }
