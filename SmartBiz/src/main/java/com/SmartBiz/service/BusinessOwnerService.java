@@ -37,4 +37,6 @@ public interface BusinessOwnerService {
     SalesDto recordMobileSale(Long businessId, com.SmartBiz.dto.MobileSaleRequestDto dto);
 
     SalesDto getSaleById(Long businessId, Long saleId);
+
+    void deleteSale(Long businessId, Long saleId);
 }

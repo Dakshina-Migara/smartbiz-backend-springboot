@@ -386,7 +386,9 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             customerRepository.save(customer);
 
             log.info("Mobile sale recorded: {} items, total: {}", totalQty, totalAmount);
-            return mapToSalesDto(savedSale);
+
+            // Return FULL sale details including items for the invoice view
+            return getSaleById(businessId, savedSale.getSaleId());
         } catch (Exception e) {
             log.error("Error recording mobile sale: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to record mobile sale: " + e.getMessage());
@@ -463,12 +465,31 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         if (inventory.getStockLevel() == 0) {
             dto.setStockStatus("Out of Stock");
         } else if (inventory.getMinStockLevel() != null && inventory.getStockLevel() <= inventory.getMinStockLevel()) {
-            dto.setStockStatus("Low Stock");
-        } else {
-            dto.setStockStatus("In Stock");
+            for (SaleItem item : sale.getSaleItems()) {
+                Inventory product = item.getProduct();
+                if (product != null) {
+                    product.setStockLevel(product.getStockLevel() + item.getQty());
+                    inventoryRepository.save(product);
+                }
+            }
         }
 
-        return dto;
+        // Update customer total purchases (deduct this sale)
+        if (sale.getCustomer() != null) {
+            Customer customer = sale.getCustomer();
+            customer.setTotalPurchases(customer.getTotalPurchases() - sale.getTotalAmount());
+            customerRepository.save(customer);
+        }
+
+        salesRepository.delete(sale);
+        log.info("Deleted sale id: {} from business id: {}. Stock restored.", saleId, businessId);
+    }catch(
+
+    Exception e)
+    {
+        log.error("Error deleting sale id {}: {}", saleId, e.getMessage(), e);
+        throw new RuntimeException("Failed to delete sale: " + e.getMessage());
+    }
     }
 
     private SalesDto mapToSalesDto(Sales sale) {
@@ -485,6 +506,8 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         if (sale.getCustomer() != null) {
             dto.setCustomerId(sale.getCustomer().getCustomerId());
             dto.setCustomerName(sale.getCustomer().getName());
+            dto.setCustomerEmail(sale.getCustomer().getEmail());
+            dto.setCustomerPhone(sale.getCustomer().getPhone());
         }
 
         return dto;
