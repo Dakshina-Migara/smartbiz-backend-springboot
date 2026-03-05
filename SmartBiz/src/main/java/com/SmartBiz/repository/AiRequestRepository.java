@@ -26,6 +26,9 @@ public interface AiRequestRepository extends JpaRepository<AiRequest, Long> {
         @Query("SELECT SUM(a.tokenUsed) FROM AiRequest a WHERE a.business.businessId = :businessId")
         Long sumTokensByBusinessId(@Param("businessId") Long businessId);
 
+        @Query("SELECT a.business.businessId, SUM(a.tokenUsed) FROM AiRequest a GROUP BY a.business.businessId")
+        List<Object[]> sumTokensGroupedByBusiness();
+
         @Query("SELECT a FROM AiRequest a WHERE a.business.businessId = :businessId ORDER BY a.createdAt DESC")
         List<AiRequest> findByBusinessId(@Param("businessId") Long businessId);
 

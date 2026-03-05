@@ -6,9 +6,9 @@ import com.SmartBiz.entity.Customer;
 import com.SmartBiz.repository.BusinessRepository;
 import com.SmartBiz.repository.CustomerRepository;
 import com.SmartBiz.service.CustomerService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,17 +17,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
     private final CustomerRepository customerRepository;
     private final BusinessRepository businessRepository;
-
-    @Autowired
-    public CustomerServiceImpl(CustomerRepository customerRepository, BusinessRepository businessRepository) {
-        this.customerRepository = customerRepository;
-        this.businessRepository = businessRepository;
-    }
 
     @Override
     public CustomerDto addCustomer(Long businessId, CustomerDto dto) {

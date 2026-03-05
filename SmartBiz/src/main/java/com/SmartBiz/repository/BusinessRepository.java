@@ -11,6 +11,9 @@ import java.util.List;
 @Repository
 public interface BusinessRepository extends JpaRepository<Businesses, Long> {
 
+        @Query("SELECT b FROM Businesses b LEFT JOIN FETCH b.subscription")
+        List<Businesses> findAllWithSubscription();
+
         Long countByStatus(String status);
 
         Long countBySubscriptionIsNotNull();

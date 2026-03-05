@@ -8,9 +8,9 @@ import com.SmartBiz.repository.BusinessRepository;
 import com.SmartBiz.repository.InvoiceRepository;
 import com.SmartBiz.repository.SalesRepository;
 import com.SmartBiz.service.InvoiceService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,21 +22,13 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
 
     private static final Logger log = LoggerFactory.getLogger(InvoiceServiceImpl.class);
     private final InvoiceRepository invoiceRepository;
     private final BusinessRepository businessRepository;
     private final SalesRepository salesRepository;
-
-    @Autowired
-    public InvoiceServiceImpl(InvoiceRepository invoiceRepository,
-            BusinessRepository businessRepository,
-            SalesRepository salesRepository) {
-        this.invoiceRepository = invoiceRepository;
-        this.businessRepository = businessRepository;
-        this.salesRepository = salesRepository;
-    }
 
     @Override
     public InvoiceDto createInvoice(Long businessId, InvoiceDto dto) {

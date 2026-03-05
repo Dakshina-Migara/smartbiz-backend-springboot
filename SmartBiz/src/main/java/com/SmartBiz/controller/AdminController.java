@@ -6,7 +6,8 @@ import com.SmartBiz.dto.BusinessesDto;
 import com.SmartBiz.dto.SubscriptionPlanDto;
 import com.SmartBiz.service.AdminService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,14 +17,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin")
+@RequiredArgsConstructor
 public class AdminController {
 
     private final AdminService adminService;
-
-    @Autowired
-    public AdminController(AdminService adminService) {
-        this.adminService = adminService;
-    }
 
     @GetMapping("/businesses")
     public ResponseEntity<List<BusinessesDto>> getAllBusinesses() {

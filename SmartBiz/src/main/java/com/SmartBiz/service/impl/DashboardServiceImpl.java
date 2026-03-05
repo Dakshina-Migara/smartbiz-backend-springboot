@@ -5,7 +5,7 @@ import com.SmartBiz.repository.InventoryRepository;
 import com.SmartBiz.repository.PaymentRepository;
 import com.SmartBiz.repository.SalesRepository;
 import com.SmartBiz.service.DashboardService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +14,7 @@ import java.util.Map;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DashboardServiceImpl.class);
@@ -22,17 +23,6 @@ public class DashboardServiceImpl implements DashboardService {
     private final InventoryRepository inventoryRepository;
     private final CustomerRepository customerRepository;
     private final PaymentRepository paymentRepository;
-
-    @Autowired
-    public DashboardServiceImpl(SalesRepository salesRepository,
-            InventoryRepository inventoryRepository,
-            CustomerRepository customerRepository,
-            PaymentRepository paymentRepository) {
-        this.salesRepository = salesRepository;
-        this.inventoryRepository = inventoryRepository;
-        this.customerRepository = customerRepository;
-        this.paymentRepository = paymentRepository;
-    }
 
     @Override
     public Map<String, Object> getKPIs(Long businessId) {

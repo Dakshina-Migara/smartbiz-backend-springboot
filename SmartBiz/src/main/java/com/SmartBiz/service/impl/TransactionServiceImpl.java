@@ -6,9 +6,9 @@ import com.SmartBiz.entity.Transaction;
 import com.SmartBiz.repository.BusinessRepository;
 import com.SmartBiz.repository.TransactionRepository;
 import com.SmartBiz.service.TransactionService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,18 +18,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
     private static final Logger log = LoggerFactory.getLogger(TransactionServiceImpl.class);
     private final TransactionRepository transactionRepository;
     private final BusinessRepository businessRepository;
-
-    @Autowired
-    public TransactionServiceImpl(TransactionRepository transactionRepository,
-            BusinessRepository businessRepository) {
-        this.transactionRepository = transactionRepository;
-        this.businessRepository = businessRepository;
-    }
 
     @Override
     public TransactionDto addTransaction(Long businessId, TransactionDto dto) {
