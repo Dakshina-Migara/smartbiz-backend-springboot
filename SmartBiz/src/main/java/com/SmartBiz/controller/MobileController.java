@@ -5,7 +5,7 @@ import com.SmartBiz.service.BusinessOwnerService;
 import com.SmartBiz.service.DashboardService;
 import com.SmartBiz.service.InvoiceService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,20 +16,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/mobile/{businessId}")
+@RequiredArgsConstructor
 public class MobileController {
 
     private final BusinessOwnerService businessOwnerService;
     private final InvoiceService invoiceService;
     private final DashboardService dashboardService;
-
-    @Autowired
-    public MobileController(BusinessOwnerService businessOwnerService,
-            InvoiceService invoiceService,
-            DashboardService dashboardService) {
-        this.businessOwnerService = businessOwnerService;
-        this.invoiceService = invoiceService;
-        this.dashboardService = dashboardService;
-    }
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getMobileDashboard(@PathVariable Long businessId) {

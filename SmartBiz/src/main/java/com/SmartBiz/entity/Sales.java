@@ -44,6 +44,9 @@ public class Sales {
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<Payment> payments;
 
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Invoice> invoices;
+
     @PrePersist
     public void generateInvoiceNumber() {
         if (this.invoiceNumber == null) {

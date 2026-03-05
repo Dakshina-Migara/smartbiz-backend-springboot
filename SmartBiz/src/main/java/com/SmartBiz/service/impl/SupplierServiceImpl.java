@@ -6,9 +6,9 @@ import com.SmartBiz.entity.Supplier;
 import com.SmartBiz.repository.BusinessRepository;
 import com.SmartBiz.repository.SupplierRepository;
 import com.SmartBiz.service.SupplierService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,17 +18,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class SupplierServiceImpl implements SupplierService {
 
     private static final Logger log = LoggerFactory.getLogger(SupplierServiceImpl.class);
     private final SupplierRepository supplierRepository;
     private final BusinessRepository businessRepository;
-
-    @Autowired
-    public SupplierServiceImpl(SupplierRepository supplierRepository, BusinessRepository businessRepository) {
-        this.supplierRepository = supplierRepository;
-        this.businessRepository = businessRepository;
-    }
 
     @Override
     public SupplierDto addSupplier(Long businessId, SupplierDto dto) {

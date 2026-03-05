@@ -5,9 +5,9 @@ import com.SmartBiz.dto.SalesDto;
 import com.SmartBiz.entity.*;
 import com.SmartBiz.repository.*;
 import com.SmartBiz.service.BusinessOwnerService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     private static final Logger log = LoggerFactory.getLogger(BusinessOwnerServiceImpl.class);
@@ -27,21 +28,6 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     private final SupplierRepository supplierRepository;
     private final CustomerRepository customerRepository;
     private final SaleItemRepository saleItemRepository;
-
-    @Autowired
-    public BusinessOwnerServiceImpl(InventoryRepository inventoryRepository,
-            SalesRepository salesRepository,
-            BusinessRepository businessRepository,
-            SupplierRepository supplierRepository,
-            CustomerRepository customerRepository,
-            SaleItemRepository saleItemRepository) {
-        this.inventoryRepository = inventoryRepository;
-        this.salesRepository = salesRepository;
-        this.businessRepository = businessRepository;
-        this.supplierRepository = supplierRepository;
-        this.customerRepository = customerRepository;
-        this.saleItemRepository = saleItemRepository;
-    }
 
     @Override
     public InventoryDto addInventory(InventoryDto dto) {
@@ -441,6 +427,56 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         }
     }
 
+    @Override
+    @Transactional
+    public void deleteSale(Long businessId, Long saleId) {
+        try {
+            Sales sale = salesRepository.findById(saleId)
+                    .orElseThrow(() -> new RuntimeException("Sale not found with id: " + saleId));
+
+            if (!sale.getBusiness().getBusinessId().equals(businessId)) {
+                throw new RuntimeException("Unauthorized: Business mismatch for delete operation");
+            }
+
+            // 1. Group stock restoration by product (Performance optimization & safety)
+            if (sale.getSaleItems() != null) {
+                Map<Long, Integer> productRestorations = new HashMap<>();
+                for (SaleItem item : sale.getSaleItems()) {
+                    if (item.getProduct() != null && item.getQty() != null) {
+                        Long pid = item.getProduct().getProductId();
+                        productRestorations.put(pid, productRestorations.getOrDefault(pid, 0) + item.getQty());
+                    }
+                }
+
+                // Apply grouped stock updates
+                for (Map.Entry<Long, Integer> entry : productRestorations.entrySet()) {
+                    inventoryRepository.findById(entry.getKey()).ifPresent(product -> {
+                        int currentStock = product.getStockLevel() != null ? product.getStockLevel() : 0;
+                        product.setStockLevel(currentStock + entry.getValue());
+                        inventoryRepository.save(product);
+                    });
+                }
+            }
+
+            // 2. Update customer total purchases (deduct this sale)
+            if (sale.getCustomer() != null && sale.getTotalAmount() != null) {
+                Customer customer = sale.getCustomer();
+                double currentTotal = customer.getTotalPurchases() != null ? customer.getTotalPurchases() : 0.0;
+                customer.setTotalPurchases(Math.max(0, currentTotal - sale.getTotalAmount()));
+                customerRepository.save(customer);
+            }
+
+            // 3. Delete the sale record (CASCADE will handle SaleItems, Payments, and
+            // Invoices)
+            salesRepository.delete(sale);
+            log.info("Successfully deleted sale id: {} for business: {}. Stock restored and customer total updated.",
+                    saleId, businessId);
+        } catch (Exception e) {
+            log.error("Failed to delete sale id {}: {}", saleId, e.getMessage(), e);
+            throw new RuntimeException("Error during sale deletion: " + e.getMessage());
+        }
+    }
+
     private InventoryDto mapToInventoryDto(Inventory inventory) {
         InventoryDto dto = new InventoryDto();
         dto.setProductId(inventory.getProductId());
@@ -465,31 +501,12 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         if (inventory.getStockLevel() == 0) {
             dto.setStockStatus("Out of Stock");
         } else if (inventory.getMinStockLevel() != null && inventory.getStockLevel() <= inventory.getMinStockLevel()) {
-            for (SaleItem item : sale.getSaleItems()) {
-                Inventory product = item.getProduct();
-                if (product != null) {
-                    product.setStockLevel(product.getStockLevel() + item.getQty());
-                    inventoryRepository.save(product);
-                }
-            }
+            dto.setStockStatus("Low Stock");
+        } else {
+            dto.setStockStatus("In Stock");
         }
 
-        // Update customer total purchases (deduct this sale)
-        if (sale.getCustomer() != null) {
-            Customer customer = sale.getCustomer();
-            customer.setTotalPurchases(customer.getTotalPurchases() - sale.getTotalAmount());
-            customerRepository.save(customer);
-        }
-
-        salesRepository.delete(sale);
-        log.info("Deleted sale id: {} from business id: {}. Stock restored.", saleId, businessId);
-    }catch(
-
-    Exception e)
-    {
-        log.error("Error deleting sale id {}: {}", saleId, e.getMessage(), e);
-        throw new RuntimeException("Failed to delete sale: " + e.getMessage());
-    }
+        return dto;
     }
 
     private SalesDto mapToSalesDto(Sales sale) {

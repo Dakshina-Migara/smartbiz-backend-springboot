@@ -6,9 +6,9 @@ import com.SmartBiz.repository.SaleItemRepository;
 import com.SmartBiz.repository.SalesRepository;
 import com.SmartBiz.repository.TransactionRepository;
 import com.SmartBiz.service.ReportsService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ReportsServiceImpl implements ReportsService {
 
     private static final Logger log = LoggerFactory.getLogger(ReportsServiceImpl.class);
@@ -25,17 +26,6 @@ public class ReportsServiceImpl implements ReportsService {
     private final TransactionRepository transactionRepository;
     private final SaleItemRepository saleItemRepository;
     private final InventoryRepository inventoryRepository;
-
-    @Autowired
-    public ReportsServiceImpl(SalesRepository salesRepository,
-            TransactionRepository transactionRepository,
-            SaleItemRepository saleItemRepository,
-            InventoryRepository inventoryRepository) {
-        this.salesRepository = salesRepository;
-        this.transactionRepository = transactionRepository;
-        this.saleItemRepository = saleItemRepository;
-        this.inventoryRepository = inventoryRepository;
-    }
 
     @Override
     public List<Map<String, Object>> getSalesTrend(Long businessId) {

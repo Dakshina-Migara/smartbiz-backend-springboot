@@ -5,9 +5,9 @@ import com.SmartBiz.entity.*;
 import com.SmartBiz.exception.ResourceNotFoundException;
 import com.SmartBiz.repository.*;
 import com.SmartBiz.service.AdminService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
 
     private static final Logger log = LoggerFactory.getLogger(AdminServiceImpl.class);
@@ -24,24 +25,26 @@ public class AdminServiceImpl implements AdminService {
     private final AiRequestRepository aiRequestRepository;
     private final SubscriptionPlanRepository subscriptionPlanRepository;
     private final ActivityLogRepository activityLogRepository;
-    private final AdminRepository adminRepository;
-
-    @Autowired
-    public AdminServiceImpl(BusinessRepository businessRepository, AiRequestRepository aiRequestRepository,
-            SubscriptionPlanRepository subscriptionPlanRepository, ActivityLogRepository activityLogRepository,
-            AdminRepository adminRepository) {
-        this.businessRepository = businessRepository;
-        this.aiRequestRepository = aiRequestRepository;
-        this.subscriptionPlanRepository = subscriptionPlanRepository;
-        this.activityLogRepository = activityLogRepository;
-        this.adminRepository = adminRepository;
-    }
 
     @Override
     @Transactional(readOnly = true)
     public List<BusinessesDto> findAllBusinesses() {
         try {
-            return businessRepository.findAll().stream().map(this::mapToBusinessDto).collect(Collectors.toList());
+            List<Businesses> businesses = businessRepository.findAllWithSubscription();
+
+            // Bulk fetch AI usage to avoid N+1
+            Map<Long, Long> aiUsageMap = aiRequestRepository.sumTokensGroupedByBusiness().stream()
+                    .collect(Collectors.toMap(
+                            row -> (Long) row[0],
+                            row -> row[1] != null ? ((Number) row[1]).longValue() : 0L));
+
+            return businesses.stream()
+                    .map(b -> {
+                        BusinessesDto dto = mapToBusinessDto(b);
+                        dto.setAiUsage(aiUsageMap.getOrDefault(b.getBusinessId(), 0L));
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching businesses: {}", e.getMessage(), e);
             return Collections.emptyList();
@@ -52,8 +55,19 @@ public class AdminServiceImpl implements AdminService {
     @Transactional(readOnly = true)
     public List<BusinessesDto> searchBusinesses(String query) {
         try {
-            return businessRepository.searchBusinesses(query).stream()
-                    .map(this::mapToBusinessDto).collect(Collectors.toList());
+            List<Businesses> businesses = businessRepository.searchBusinesses(query);
+
+            Map<Long, Long> aiUsageMap = aiRequestRepository.sumTokensGroupedByBusiness().stream()
+                    .collect(Collectors.toMap(
+                            row -> (Long) row[0],
+                            row -> row[1] != null ? ((Number) row[1]).longValue() : 0L));
+
+            return businesses.stream()
+                    .map(b -> {
+                        BusinessesDto dto = mapToBusinessDto(b);
+                        dto.setAiUsage(aiUsageMap.getOrDefault(b.getBusinessId(), 0L));
+                        return dto;
+                    }).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error searching businesses with query '{}': {}", query, e.getMessage(), e);
             return Collections.emptyList();
@@ -248,25 +262,26 @@ public class AdminServiceImpl implements AdminService {
         dto.setStatus(b.getStatus());
         dto.setRegisteredDate(b.getRegisteredDate());
 
-        List<Admin> admins = adminRepository.findByBusinessId(b.getBusinessId());
-        admins.stream()
-                .filter(a -> "OWNER".equalsIgnoreCase(a.getRole()))
-                .findFirst()
-                .ifPresentOrElse(
-                        owner -> dto.setBusinessOwnerName(owner.getName()),
-                        () -> {
-                            if (!admins.isEmpty()) {
-                                dto.setBusinessOwnerName(admins.get(0).getName());
-                            }
-                        });
+        // Optimize: Only fetch owner if necessary, or just rely on
+        // b.getBusinessOwnerName()
+        // For now, let's keep it simple as businessOwnerName is a field in Businesses
+        // and avoid the N+1 call to adminRepository for every business in the list.
+        // If specific owner details from Admin table are needed, they should be
+        // join-fetched.
 
         if (b.getSubscription() != null) {
             dto.setPlanName(b.getSubscription().getPlanName());
             dto.setRevenue(b.getSubscription().getPrice());
         }
 
-        Long aiUsage = aiRequestRepository.sumTokensByBusinessId(b.getBusinessId());
-        dto.setAiUsage(aiUsage != null ? aiUsage : 0L);
+        // aiUsage is set in the caller for list operations to avoid N+1
+        // But for single object mapping (like in suspend/activate), we can still fetch
+        // it
+        // Or better yet, just leave it as 0 if not pre-provided.
+        if (dto.getAiUsage() == null) {
+            Long aiUsage = aiRequestRepository.sumTokensByBusinessId(b.getBusinessId());
+            dto.setAiUsage(aiUsage != null ? aiUsage : 0L);
+        }
 
         return dto;
     }

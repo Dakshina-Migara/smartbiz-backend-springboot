@@ -3,7 +3,7 @@ package com.SmartBiz.controller;
 import com.SmartBiz.dto.PaymentDto;
 import com.SmartBiz.service.PaymentService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,14 +12,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/business/{businessId}/payments")
+@RequiredArgsConstructor
 public class PaymentController {
 
     private final PaymentService paymentService;
-
-    @Autowired
-    public PaymentController(PaymentService paymentService) {
-        this.paymentService = paymentService;
-    }
 
     @PostMapping("/record")
     public ResponseEntity<PaymentDto> recordPayment(@PathVariable Long businessId, @Valid @RequestBody PaymentDto dto) {

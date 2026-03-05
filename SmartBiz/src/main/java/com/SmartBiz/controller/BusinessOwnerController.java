@@ -4,7 +4,7 @@ import com.SmartBiz.dto.InventoryDto;
 import com.SmartBiz.dto.SalesDto;
 import com.SmartBiz.service.BusinessOwnerService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,14 +14,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/business")
+@RequiredArgsConstructor
 public class BusinessOwnerController {
 
     private final BusinessOwnerService service;
-
-    @Autowired
-    public BusinessOwnerController(BusinessOwnerService service) {
-        this.service = service;
-    }
 
     @PostMapping("/inventory")
     public ResponseEntity<InventoryDto> addInventory(@Valid @RequestBody InventoryDto dto) {
@@ -84,6 +80,12 @@ public class BusinessOwnerController {
     @DeleteMapping("/{businessId}/inventory/{productId}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long businessId, @PathVariable Long productId) {
         service.deleteProduct(productId, businessId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping("/{businessId}/sales/{saleId}")
+    public ResponseEntity<Void> deleteSale(@PathVariable Long businessId, @PathVariable Long saleId) {
+        service.deleteSale(businessId, saleId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
