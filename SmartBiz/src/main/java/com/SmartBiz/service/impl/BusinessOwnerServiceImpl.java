@@ -5,9 +5,9 @@ import com.SmartBiz.dto.SalesDto;
 import com.SmartBiz.entity.*;
 import com.SmartBiz.repository.*;
 import com.SmartBiz.service.BusinessOwnerService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     private static final Logger log = LoggerFactory.getLogger(BusinessOwnerServiceImpl.class);
@@ -27,21 +28,6 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     private final SupplierRepository supplierRepository;
     private final CustomerRepository customerRepository;
     private final SaleItemRepository saleItemRepository;
-
-    @Autowired
-    public BusinessOwnerServiceImpl(InventoryRepository inventoryRepository,
-            SalesRepository salesRepository,
-            BusinessRepository businessRepository,
-            SupplierRepository supplierRepository,
-            CustomerRepository customerRepository,
-            SaleItemRepository saleItemRepository) {
-        this.inventoryRepository = inventoryRepository;
-        this.salesRepository = salesRepository;
-        this.businessRepository = businessRepository;
-        this.supplierRepository = supplierRepository;
-        this.customerRepository = customerRepository;
-        this.saleItemRepository = saleItemRepository;
-    }
 
     @Override
     public InventoryDto addInventory(InventoryDto dto) {
@@ -386,7 +372,9 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             customerRepository.save(customer);
 
             log.info("Mobile sale recorded: {} items, total: {}", totalQty, totalAmount);
-            return mapToSalesDto(savedSale);
+
+            // Return FULL sale details including items for the invoice view
+            return getSaleById(businessId, savedSale.getSaleId());
         } catch (Exception e) {
             log.error("Error recording mobile sale: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to record mobile sale: " + e.getMessage());
@@ -403,6 +391,89 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         } catch (Exception e) {
             log.error("Error generating AI insight for business id {}: {}", businessId, e.getMessage(), e);
             throw new RuntimeException("Failed to generate AI insight: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SalesDto getSaleById(Long businessId, Long saleId) {
+        try {
+            Sales sale = salesRepository.findById(saleId)
+                    .orElseThrow(() -> new RuntimeException("Sale not found with id: " + saleId));
+
+            if (!sale.getBusiness().getBusinessId().equals(businessId)) {
+                throw new RuntimeException("Unauthorized: Business mismatch");
+            }
+
+            SalesDto dto = mapToSalesDto(sale);
+            // Also map items
+            if (sale.getSaleItems() != null) {
+                List<com.SmartBiz.dto.SaleItemDto> itemDtos = sale.getSaleItems().stream().map(si -> {
+                    com.SmartBiz.dto.SaleItemDto itemDto = new com.SmartBiz.dto.SaleItemDto();
+                    itemDto.setSaleItemId(si.getSaleItemId());
+                    itemDto.setProductId(si.getProduct().getProductId());
+                    itemDto.setProductName(si.getProduct().getProductName());
+                    itemDto.setQty(si.getQty());
+                    itemDto.setPrice(si.getPrice());
+                    itemDto.setSaleId(saleId);
+                    return itemDto;
+                }).collect(Collectors.toList());
+                dto.setItems(itemDtos);
+            }
+            return dto;
+        } catch (Exception e) {
+            log.error("Error fetching sale id {}: {}", saleId, e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch sale details: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteSale(Long businessId, Long saleId) {
+        try {
+            Sales sale = salesRepository.findById(saleId)
+                    .orElseThrow(() -> new RuntimeException("Sale not found with id: " + saleId));
+
+            if (!sale.getBusiness().getBusinessId().equals(businessId)) {
+                throw new RuntimeException("Unauthorized: Business mismatch for delete operation");
+            }
+
+            // 1. Group stock restoration by product (Performance optimization & safety)
+            if (sale.getSaleItems() != null) {
+                Map<Long, Integer> productRestorations = new HashMap<>();
+                for (SaleItem item : sale.getSaleItems()) {
+                    if (item.getProduct() != null && item.getQty() != null) {
+                        Long pid = item.getProduct().getProductId();
+                        productRestorations.put(pid, productRestorations.getOrDefault(pid, 0) + item.getQty());
+                    }
+                }
+
+                // Apply grouped stock updates
+                for (Map.Entry<Long, Integer> entry : productRestorations.entrySet()) {
+                    inventoryRepository.findById(entry.getKey()).ifPresent(product -> {
+                        int currentStock = product.getStockLevel() != null ? product.getStockLevel() : 0;
+                        product.setStockLevel(currentStock + entry.getValue());
+                        inventoryRepository.save(product);
+                    });
+                }
+            }
+
+            // 2. Update customer total purchases (deduct this sale)
+            if (sale.getCustomer() != null && sale.getTotalAmount() != null) {
+                Customer customer = sale.getCustomer();
+                double currentTotal = customer.getTotalPurchases() != null ? customer.getTotalPurchases() : 0.0;
+                customer.setTotalPurchases(Math.max(0, currentTotal - sale.getTotalAmount()));
+                customerRepository.save(customer);
+            }
+
+            // 3. Delete the sale record (CASCADE will handle SaleItems, Payments, and
+            // Invoices)
+            salesRepository.delete(sale);
+            log.info("Successfully deleted sale id: {} for business: {}. Stock restored and customer total updated.",
+                    saleId, businessId);
+        } catch (Exception e) {
+            log.error("Failed to delete sale id {}: {}", saleId, e.getMessage(), e);
+            throw new RuntimeException("Error during sale deletion: " + e.getMessage());
         }
     }
 
@@ -452,6 +523,8 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         if (sale.getCustomer() != null) {
             dto.setCustomerId(sale.getCustomer().getCustomerId());
             dto.setCustomerName(sale.getCustomer().getName());
+            dto.setCustomerEmail(sale.getCustomer().getEmail());
+            dto.setCustomerPhone(sale.getCustomer().getPhone());
         }
 
         return dto;

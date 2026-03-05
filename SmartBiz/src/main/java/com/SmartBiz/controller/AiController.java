@@ -1,7 +1,7 @@
 package com.SmartBiz.controller;
 
 import com.SmartBiz.service.AiService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,14 +10,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/business/{businessId}/ai")
+@RequiredArgsConstructor
 public class AiController {
 
     private final AiService aiService;
-
-    @Autowired
-    public AiController(AiService aiService) {
-        this.aiService = aiService;
-    }
 
     @PostMapping("/query")
     public ResponseEntity<Map<String, String>> queryData(@PathVariable Long businessId,

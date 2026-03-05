@@ -6,9 +6,9 @@ import com.SmartBiz.entity.AiRequest;
 import com.SmartBiz.entity.Businesses;
 import com.SmartBiz.repository.*;
 import com.SmartBiz.service.AiInsightService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AiInsightServiceImpl implements AiInsightService {
 
     private static final Logger log = LoggerFactory.getLogger(AiInsightServiceImpl.class);
@@ -28,21 +29,6 @@ public class AiInsightServiceImpl implements AiInsightService {
     private final InventoryRepository inventoryRepository;
     private final TransactionRepository transactionRepository;
     private final CustomerRepository customerRepository;
-
-    @Autowired
-    public AiInsightServiceImpl(AiRequestRepository aiRequestRepository,
-            BusinessRepository businessRepository,
-            SalesRepository salesRepository,
-            InventoryRepository inventoryRepository,
-            TransactionRepository transactionRepository,
-            CustomerRepository customerRepository) {
-        this.aiRequestRepository = aiRequestRepository;
-        this.businessRepository = businessRepository;
-        this.salesRepository = salesRepository;
-        this.inventoryRepository = inventoryRepository;
-        this.transactionRepository = transactionRepository;
-        this.customerRepository = customerRepository;
-    }
 
     @Override
     public AiInsightResponseDto generateInsight(AiInsightRequestDto request) {

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -20,6 +21,8 @@ public class SalesDto {
     private Long customerId;
 
     private String customerName;
+    private String customerEmail;
+    private String customerPhone;
 
     @NotNull(message = "Total amount is required")
     @Min(value = 0, message = "Total amount cannot be negative")
@@ -37,4 +40,6 @@ public class SalesDto {
 
     @NotNull(message = "Business ID is required")
     private Long businessId;
+
+    private List<SaleItemDto> items;
 }
