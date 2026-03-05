@@ -406,6 +406,39 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public SalesDto getSaleById(Long businessId, Long saleId) {
+        try {
+            Sales sale = salesRepository.findById(saleId)
+                    .orElseThrow(() -> new RuntimeException("Sale not found with id: " + saleId));
+
+            if (!sale.getBusiness().getBusinessId().equals(businessId)) {
+                throw new RuntimeException("Unauthorized: Business mismatch");
+            }
+
+            SalesDto dto = mapToSalesDto(sale);
+            // Also map items
+            if (sale.getSaleItems() != null) {
+                List<com.SmartBiz.dto.SaleItemDto> itemDtos = sale.getSaleItems().stream().map(si -> {
+                    com.SmartBiz.dto.SaleItemDto itemDto = new com.SmartBiz.dto.SaleItemDto();
+                    itemDto.setSaleItemId(si.getSaleItemId());
+                    itemDto.setProductId(si.getProduct().getProductId());
+                    itemDto.setProductName(si.getProduct().getProductName());
+                    itemDto.setQty(si.getQty());
+                    itemDto.setPrice(si.getPrice());
+                    itemDto.setSaleId(saleId);
+                    return itemDto;
+                }).collect(Collectors.toList());
+                dto.setItems(itemDtos);
+            }
+            return dto;
+        } catch (Exception e) {
+            log.error("Error fetching sale id {}: {}", saleId, e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch sale details: " + e.getMessage());
+        }
+    }
+
     private InventoryDto mapToInventoryDto(Inventory inventory) {
         InventoryDto dto = new InventoryDto();
         dto.setProductId(inventory.getProductId());

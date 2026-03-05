@@ -76,6 +76,11 @@ public class BusinessOwnerController {
         return new ResponseEntity<>(service.searchSales(businessId, q), HttpStatus.OK);
     }
 
+    @GetMapping("/{businessId}/sales/{saleId}")
+    public ResponseEntity<SalesDto> getSaleDetails(@PathVariable Long businessId, @PathVariable Long saleId) {
+        return new ResponseEntity<>(service.getSaleById(businessId, saleId), HttpStatus.OK);
+    }
+
     @DeleteMapping("/{businessId}/inventory/{productId}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long businessId, @PathVariable Long productId) {
         service.deleteProduct(productId, businessId);

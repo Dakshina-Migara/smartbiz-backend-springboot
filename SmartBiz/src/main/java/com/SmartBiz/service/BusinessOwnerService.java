@@ -35,4 +35,6 @@ public interface BusinessOwnerService {
     String generateAiInsight(Long businessId, String prompt);
 
     SalesDto recordMobileSale(Long businessId, com.SmartBiz.dto.MobileSaleRequestDto dto);
+
+    SalesDto getSaleById(Long businessId, Long saleId);
 }
