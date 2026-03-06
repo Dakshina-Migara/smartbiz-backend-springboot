@@ -24,10 +24,6 @@ public interface AdminService {
 
     List<BusinessesDto> searchBusinesses(String query);
 
-    BusinessesDto suspendBusiness(Long businessId);
-
-    BusinessesDto activateBusiness(Long businessId);
-
     void deleteBusiness(Long businessId);
 
     List<ActivityLogDto> getActivityLogs();

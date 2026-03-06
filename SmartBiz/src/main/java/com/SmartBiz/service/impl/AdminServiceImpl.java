@@ -102,36 +102,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public BusinessesDto suspendBusiness(Long businessId) {
-        try {
-            Businesses business = businessRepository.findById(businessId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
-            business.setStatus("suspended");
-            Businesses updated = businessRepository.save(business);
-            log.info("Suspended business id: {}", businessId);
-            return mapToBusinessDto(updated);
-        } catch (Exception e) {
-            log.error("Error suspending business id {}: {}", businessId, e.getMessage(), e);
-            throw new RuntimeException("Failed to suspend business: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public BusinessesDto activateBusiness(Long businessId) {
-        try {
-            Businesses business = businessRepository.findById(businessId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
-            business.setStatus("active");
-            Businesses updated = businessRepository.save(business);
-            log.info("Activated business id: {}", businessId);
-            return mapToBusinessDto(updated);
-        } catch (Exception e) {
-            log.error("Error activating business id {}: {}", businessId, e.getMessage(), e);
-            throw new RuntimeException("Failed to activate business: " + e.getMessage());
-        }
-    }
-
-    @Override
     public void deleteBusiness(Long businessId) {
         try {
             Businesses business = businessRepository.findById(businessId)
