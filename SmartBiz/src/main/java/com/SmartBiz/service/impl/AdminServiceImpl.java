@@ -25,28 +25,55 @@ public class AdminServiceImpl implements AdminService {
     private final AiRequestRepository aiRequestRepository;
     private final SubscriptionPlanRepository subscriptionPlanRepository;
     private final ActivityLogRepository activityLogRepository;
+    private final AdminRepository adminRepository;
 
     @Override
     @Transactional(readOnly = true)
     public List<BusinessesDto> findAllBusinesses() {
         try {
-            List<Businesses> businesses = businessRepository.findAllWithSubscription();
+            // 2. Fetch all admins (includes owners and system admins)
+            List<Admin> allAdmins = adminRepository.findAll();
 
-            // Bulk fetch AI usage to avoid N+1
+            // 3. Bulk fetch AI usage
             Map<Long, Long> aiUsageMap = aiRequestRepository.sumTokensGroupedByBusiness().stream()
                     .collect(Collectors.toMap(
                             row -> (Long) row[0],
                             row -> row[1] != null ? ((Number) row[1]).longValue() : 0L));
 
-            return businesses.stream()
-                    .map(b -> {
-                        BusinessesDto dto = mapToBusinessDto(b);
-                        dto.setAiUsage(aiUsageMap.getOrDefault(b.getBusinessId(), 0L));
+            return allAdmins.stream()
+                    .map(admin -> {
+                        BusinessesDto dto = new BusinessesDto();
+                        dto.setAdminId(admin.getAdminId());
+                        dto.setRole(admin.getRole());
+                        dto.setBusinessOwnerName(admin.getName());
+                        dto.setEmail(admin.getEmail());
+                        dto.setRegisteredDate(admin.getCreatedAt());
+
+                        Businesses b = admin.getBusiness();
+                        if (b != null) {
+                            // Account is linked to a business
+                            dto.setBusinessId(b.getBusinessId());
+                            dto.setName(b.getName());
+                            dto.setAddress(b.getAddress());
+                            dto.setPhone(b.getPhone());
+                            dto.setStatus(b.getStatus());
+
+                            if (b.getSubscription() != null) {
+                                dto.setPlanName(b.getSubscription().getPlanName());
+                                dto.setRevenue(b.getSubscription().getPrice());
+                            }
+                            dto.setAiUsage(aiUsageMap.getOrDefault(b.getBusinessId(), 0L));
+                        } else {
+                            // Standalone Admin
+                            dto.setName("N/A (System Admin)");
+                            dto.setStatus("active");
+                            dto.setRole("ADMIN");
+                        }
                         return dto;
                     })
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            log.error("Error fetching businesses: {}", e.getMessage(), e);
+            log.error("Error fetching all accounts: {}", e.getMessage(), e);
             return Collections.emptyList();
         }
     }
