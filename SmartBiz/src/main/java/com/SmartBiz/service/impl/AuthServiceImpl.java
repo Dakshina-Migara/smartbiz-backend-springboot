@@ -41,30 +41,36 @@ public class AuthServiceImpl implements AuthService {
                 throw new RuntimeException("Email already registered: " + dto.getEmail());
             }
 
-            // 1. Create Business
-            Businesses business = new Businesses();
-            business.setName(dto.getBusinessName());
-            business.setAddress(dto.getBusinessAddress());
-            business.setEmail(dto.getEmail());
-            business.setPhone(dto.getPhone());
-            business.setBusinessOwnerName(dto.getOwnerName());
-            business.setStatus("active");
-            business.setRegisteredDate(LocalDateTime.now());
+            // 1. Determine Role
+            String roleStr = dto.getRole() != null ? dto.getRole().toUpperCase() : "OWNER";
 
-            Businesses savedBusiness = businessRepository.save(business);
-
-            // 2. Create Admin account
+            // 2. Create Admin account object
             Admin admin = new Admin();
             admin.setName(dto.getOwnerName());
             admin.setEmail(dto.getEmail());
             admin.setPassword(passwordEncoder.encode(dto.getPassword()));
-            admin.setRole(dto.getRole() != null ? dto.getRole().toUpperCase() : "OWNER");
-            admin.setBusiness(savedBusiness);
+            admin.setRole(roleStr);
             admin.setCreatedAt(LocalDateTime.now());
 
-            adminRepository.save(admin);
+            if ("OWNER".equalsIgnoreCase(roleStr)) {
+                // Create Business only for Owners
+                Businesses business = new Businesses();
+                business.setName(dto.getBusinessName());
+                business.setAddress(dto.getBusinessAddress());
+                business.setEmail(dto.getEmail());
+                business.setPhone(dto.getPhone());
+                business.setBusinessOwnerName(dto.getOwnerName());
+                business.setStatus("active");
+                business.setRegisteredDate(LocalDateTime.now());
 
-            log.info("Registered new business: {} for owner: {}", business.getName(), admin.getEmail());
+                Businesses savedBusiness = businessRepository.save(business);
+                admin.setBusiness(savedBusiness);
+                log.info("Registered new business: {} for owner: {}", business.getName(), admin.getEmail());
+            } else {
+                log.info("Registered new Admin: {}", admin.getEmail());
+            }
+
+            adminRepository.save(admin);
 
             String jwtToken = jwtService.generateToken(admin);
             log.info("Generated token for registration: {}", jwtToken);
