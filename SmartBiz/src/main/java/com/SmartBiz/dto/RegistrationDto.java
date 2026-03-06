@@ -6,12 +6,10 @@ import lombok.Data;
 
 @Data
 public class RegistrationDto {
-    @NotBlank(message = "Business name is required")
     private String businessName;
 
     private String businessAddress;
 
-    @NotBlank(message = "Owner name is required")
     private String ownerName;
 
     @NotBlank(message = "Email is required")
