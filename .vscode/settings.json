@@ -1,3 +1,5 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.import.maven.search.location": "SmartBiz",
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

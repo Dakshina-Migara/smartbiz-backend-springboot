@@ -79,7 +79,9 @@ public class AuthServiceImpl implements AuthService {
             response.put("token", jwtToken);
             response.put("expiresIn", jwtService.getExpirationTime());
             response.put("tokenType", "Bearer");
-            response.put("businessId", savedBusiness.getBusinessId());
+            if (admin.getBusiness() != null) {
+                response.put("businessId", admin.getBusiness().getBusinessId());
+            }
             response.put("ownerEmail", admin.getEmail());
             response.put("role", admin.getRole());
 
