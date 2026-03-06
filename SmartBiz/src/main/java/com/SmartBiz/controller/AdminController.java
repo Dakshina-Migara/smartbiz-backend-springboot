@@ -38,6 +38,12 @@ public class AdminController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @PutMapping("/accounts/{adminId}")
+    public ResponseEntity<BusinessesDto> updateAccount(@PathVariable Long adminId,
+            @Valid @RequestBody BusinessesDto dto) {
+        return new ResponseEntity<>(adminService.updateAccount(adminId, dto), HttpStatus.OK);
+    }
+
     @GetMapping("/logs/ai")
     public ResponseEntity<List<AIRequestDto>> getAiUsageLogs() {
         return new ResponseEntity<>(adminService.getGlobalAiLogs(), HttpStatus.OK);

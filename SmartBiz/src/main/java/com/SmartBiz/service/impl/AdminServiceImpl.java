@@ -41,36 +41,7 @@ public class AdminServiceImpl implements AdminService {
                             row -> row[1] != null ? ((Number) row[1]).longValue() : 0L));
 
             return allAdmins.stream()
-                    .map(admin -> {
-                        BusinessesDto dto = new BusinessesDto();
-                        dto.setAdminId(admin.getAdminId());
-                        dto.setRole(admin.getRole());
-                        dto.setBusinessOwnerName(admin.getName());
-                        dto.setEmail(admin.getEmail());
-                        dto.setRegisteredDate(admin.getCreatedAt());
-
-                        Businesses b = admin.getBusiness();
-                        if (b != null) {
-                            // Account is linked to a business
-                            dto.setBusinessId(b.getBusinessId());
-                            dto.setName(b.getName());
-                            dto.setAddress(b.getAddress());
-                            dto.setPhone(b.getPhone());
-                            dto.setStatus(b.getStatus());
-
-                            if (b.getSubscription() != null) {
-                                dto.setPlanName(b.getSubscription().getPlanName());
-                                dto.setRevenue(b.getSubscription().getPrice());
-                            }
-                            dto.setAiUsage(aiUsageMap.getOrDefault(b.getBusinessId(), 0L));
-                        } else {
-                            // Standalone Admin
-                            dto.setName("N/A (System Admin)");
-                            dto.setStatus("active");
-                            dto.setRole("ADMIN");
-                        }
-                        return dto;
-                    })
+                    .map(admin -> mapFullAccount(admin, aiUsageMap))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching all accounts: {}", e.getMessage(), e);
@@ -90,11 +61,10 @@ public class AdminServiceImpl implements AdminService {
                             row -> row[1] != null ? ((Number) row[1]).longValue() : 0L));
 
             return businesses.stream()
-                    .map(b -> {
-                        BusinessesDto dto = mapToBusinessDto(b);
-                        dto.setAiUsage(aiUsageMap.getOrDefault(b.getBusinessId(), 0L));
-                        return dto;
-                    }).collect(Collectors.toList());
+                    .filter(b -> b.getAdmins() != null && !b.getAdmins().isEmpty())
+                    .map(b -> mapFullAccount(b.getAdmins().get(0), aiUsageMap)) // Assuming 1-1 link for search results
+                                                                                // if possible or find admin
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error searching businesses with query '{}': {}", query, e.getMessage(), e);
             return Collections.emptyList();
@@ -102,20 +72,53 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public void deleteBusiness(Long businessId) {
         try {
+            // Find businesses with that admin id? (wait user said businessId but linked to
+            // Admin)
+            // Actually, currently deleteBusiness works by businessId in the controller.
+            // Let's assume it should also delete the associated Admin if it's the owner?
+            // Existing logic works on businessId.
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
 
-            // cascades in Businesses entity handle the rest
             businessRepository.delete(business);
-            log.info("Successfully deleted business id: {} and all its associated data via JPA cascades", businessId);
-        } catch (ResourceNotFoundException e) {
-            throw e;
+            log.info("Deleted business id: {}", businessId);
         } catch (Exception e) {
             log.error("Error deleting business id {}: {}", businessId, e.getMessage(), e);
-            throw new RuntimeException(
-                    "Failed to delete business. This is likely because the business has existing transaction history or records. Consider suspending the business instead.");
+            throw new RuntimeException("Failed to delete business: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public BusinessesDto updateAccount(Long adminId, BusinessesDto dto) {
+        try {
+            Admin admin = adminRepository.findById(adminId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + adminId));
+
+            // Update user/owner basic details
+            admin.setName(dto.getBusinessOwnerName());
+            admin.setEmail(dto.getEmail());
+            adminRepository.save(admin);
+
+            // Update linked business details if it exists
+            Businesses business = admin.getBusiness();
+            if (business != null) {
+                business.setName(dto.getName());
+                business.setAddress(dto.getAddress());
+                business.setPhone(dto.getPhone());
+                business.setEmail(dto.getEmail()); // stay in sync
+                business.setBusinessOwnerName(dto.getBusinessOwnerName());
+                businessRepository.save(business);
+            }
+
+            log.info("Successfully updated account for adminId: {}", adminId);
+            return mapFullAccount(admin, null);
+        } catch (Exception e) {
+            log.error("Error updating account id {}: {}", adminId, e.getMessage(), e);
+            throw new RuntimeException("Failed to update account: " + e.getMessage());
         }
     }
 
@@ -248,41 +251,6 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    private BusinessesDto mapToBusinessDto(Businesses b) {
-        BusinessesDto dto = new BusinessesDto();
-        dto.setBusinessId(b.getBusinessId());
-        dto.setBusinessOwnerName(b.getBusinessOwnerName());
-        dto.setName(b.getName());
-        dto.setAddress(b.getAddress());
-        dto.setEmail(b.getEmail());
-        dto.setPhone(b.getPhone());
-        dto.setStatus(b.getStatus());
-        dto.setRegisteredDate(b.getRegisteredDate());
-
-        // Optimize: Only fetch owner if necessary, or just rely on
-        // b.getBusinessOwnerName()
-        // For now, let's keep it simple as businessOwnerName is a field in Businesses
-        // and avoid the N+1 call to adminRepository for every business in the list.
-        // If specific owner details from Admin table are needed, they should be
-        // join-fetched.
-
-        if (b.getSubscription() != null) {
-            dto.setPlanName(b.getSubscription().getPlanName());
-            dto.setRevenue(b.getSubscription().getPrice());
-        }
-
-        // aiUsage is set in the caller for list operations to avoid N+1
-        // But for single object mapping (like in suspend/activate), we can still fetch
-        // it
-        // Or better yet, just leave it as 0 if not pre-provided.
-        if (dto.getAiUsage() == null) {
-            Long aiUsage = aiRequestRepository.sumTokensByBusinessId(b.getBusinessId());
-            dto.setAiUsage(aiUsage != null ? aiUsage : 0L);
-        }
-
-        return dto;
-    }
-
     private SubscriptionPlanDto mapToSubscriptionDto(SubscriptionPlan s) {
         SubscriptionPlanDto dto = new SubscriptionPlanDto();
         dto.setSubscriptionId(s.getSubscriptionId());
@@ -358,6 +326,43 @@ public class AdminServiceImpl implements AdminService {
             log.error("Error deleting subscription plan id {}: {}", id, e.getMessage(), e);
             throw new RuntimeException("Failed to delete subscription plan: " + e.getMessage());
         }
+    }
+
+    private BusinessesDto mapFullAccount(Admin admin, Map<Long, Long> aiUsageMap) {
+        BusinessesDto dto = new BusinessesDto();
+        dto.setAdminId(admin.getAdminId());
+        dto.setRole(admin.getRole());
+        dto.setBusinessOwnerName(admin.getName());
+        dto.setEmail(admin.getEmail());
+        dto.setRegisteredDate(admin.getCreatedAt());
+
+        Businesses b = admin.getBusiness();
+        if (b != null) {
+            dto.setBusinessId(b.getBusinessId());
+            dto.setName(b.getName());
+            dto.setAddress(b.getAddress());
+            dto.setPhone(b.getPhone());
+            dto.setStatus(b.getStatus() != null ? b.getStatus() : "active");
+
+            if (b.getSubscription() != null) {
+                dto.setPlanName(b.getSubscription().getPlanName());
+                dto.setRevenue(b.getSubscription().getPrice());
+            }
+
+            if (aiUsageMap != null) {
+                dto.setAiUsage(aiUsageMap.getOrDefault(b.getBusinessId(), 0L));
+            } else {
+                Long usage = aiRequestRepository.sumTokensByBusinessId(b.getBusinessId());
+                dto.setAiUsage(usage != null ? usage : 0L);
+            }
+        } else {
+            dto.setName("N/A (System Admin)");
+            dto.setStatus("active");
+            dto.setRole("ADMIN");
+            dto.setAiUsage(0L);
+            dto.setRevenue(0.0);
+        }
+        return dto;
     }
 
     private ActivityLogDto mapToActivityLogDto(ActivityLog log) {
