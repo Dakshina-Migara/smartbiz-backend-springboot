@@ -32,20 +32,16 @@ public class AdminController {
         return new ResponseEntity<>(adminService.searchBusinesses(q), HttpStatus.OK);
     }
 
-    @PutMapping("/businesses/{id}/suspend")
-    public ResponseEntity<BusinessesDto> suspendBusiness(@PathVariable Long id) {
-        return new ResponseEntity<>(adminService.suspendBusiness(id), HttpStatus.OK);
-    }
-
-    @PutMapping("/businesses/{id}/activate")
-    public ResponseEntity<BusinessesDto> activateBusiness(@PathVariable Long id) {
-        return new ResponseEntity<>(adminService.activateBusiness(id), HttpStatus.OK);
-    }
-
     @DeleteMapping("/businesses/{id}")
     public ResponseEntity<Void> deleteBusiness(@PathVariable Long id) {
         adminService.deleteBusiness(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping("/accounts/{adminId}")
+    public ResponseEntity<BusinessesDto> updateAccount(@PathVariable Long adminId,
+            @Valid @RequestBody BusinessesDto dto) {
+        return new ResponseEntity<>(adminService.updateAccount(adminId, dto), HttpStatus.OK);
     }
 
     @GetMapping("/logs/ai")

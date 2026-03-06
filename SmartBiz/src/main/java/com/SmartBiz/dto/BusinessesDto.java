@@ -13,6 +13,10 @@ public class BusinessesDto {
 
     private Long businessId;
 
+    private Long adminId;
+
+    private String role;
+
     private String businessOwnerName;
 
     private String name;
