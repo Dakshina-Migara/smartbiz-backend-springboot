@@ -75,6 +75,16 @@ public class AuthServiceImpl implements AuthService {
             response.put("tokenType", "Bearer");
             response.put("businessId", savedBusiness.getBusinessId());
             response.put("ownerEmail", admin.getEmail());
+            response.put("role", admin.getRole());
+
+            if ("ADMIN".equalsIgnoreCase(admin.getRole())) {
+                response.put("accessibleArea", "ADMIN_PORTAL");
+                response.put("homePath", "/admin/dashboard");
+            } else {
+                response.put("accessibleArea", "BUSINESS_PORTAL");
+                response.put("homePath", "/owner/dashboard");
+            }
+
             return response;
 
         } catch (Exception e) {
@@ -110,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
                 response.put("homePath", "/admin/dashboard");
             } else {
                 response.put("accessibleArea", "BUSINESS_PORTAL");
-                response.put("homePath", "/business/dashboard");
+                response.put("homePath", "/owner/dashboard");
             }
 
             if (admin.getBusiness() != null) {
