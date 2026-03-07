@@ -26,6 +26,8 @@ public interface AdminService {
 
     void deleteBusiness(Long businessId);
 
+    void deleteAccount(Long adminId);
+
     BusinessesDto updateAccount(Long adminId, BusinessesDto dto);
 
     List<ActivityLogDto> getActivityLogs();

@@ -38,6 +38,12 @@ public class AdminController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @DeleteMapping("/accounts/{adminId}")
+    public ResponseEntity<Void> deleteAccount(@PathVariable Long adminId) {
+        adminService.deleteAccount(adminId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @PutMapping("/accounts/{adminId}")
     public ResponseEntity<BusinessesDto> updateAccount(@PathVariable Long adminId,
             @Valid @RequestBody BusinessesDto dto) {

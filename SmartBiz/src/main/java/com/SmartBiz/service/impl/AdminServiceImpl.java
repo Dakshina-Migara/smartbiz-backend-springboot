@@ -75,11 +75,6 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public void deleteBusiness(Long businessId) {
         try {
-            // Find businesses with that admin id? (wait user said businessId but linked to
-            // Admin)
-            // Actually, currently deleteBusiness works by businessId in the controller.
-            // Let's assume it should also delete the associated Admin if it's the owner?
-            // Existing logic works on businessId.
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
 
@@ -88,6 +83,27 @@ public class AdminServiceImpl implements AdminService {
         } catch (Exception e) {
             log.error("Error deleting business id {}: {}", businessId, e.getMessage(), e);
             throw new RuntimeException("Failed to delete business: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteAccount(Long adminId) {
+        try {
+            Admin admin = adminRepository.findById(adminId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + adminId));
+
+            // If it's an owner, we should delete the business which will cascade to admin
+            if (admin.getBusiness() != null) {
+                deleteBusiness(admin.getBusiness().getBusinessId());
+            } else {
+                // It's a system admin
+                adminRepository.delete(admin);
+                log.info("Deleted system admin id: {}", adminId);
+            }
+        } catch (Exception e) {
+            log.error("Error deleting account id {}: {}", adminId, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete account: " + e.getMessage());
         }
     }
 
