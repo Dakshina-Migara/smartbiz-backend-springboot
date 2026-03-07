@@ -82,7 +82,9 @@ public class AuthServiceImpl implements AuthService {
             if (admin.getBusiness() != null) {
                 response.put("businessId", admin.getBusiness().getBusinessId());
             }
-            response.put("ownerEmail", admin.getEmail());
+            response.put("adminId", admin.getAdminId());
+            response.put("email", admin.getEmail());
+            response.put("name", admin.getName());
             response.put("role", admin.getRole());
 
             if ("ADMIN".equalsIgnoreCase(admin.getRole())) {
@@ -121,6 +123,8 @@ public class AuthServiceImpl implements AuthService {
             response.put("expiresIn", 3600000); // 1 hour in ms
             response.put("tokenType", "Bearer");
             response.put("adminId", admin.getAdminId());
+            response.put("email", admin.getEmail());
+            response.put("name", admin.getName());
             response.put("role", admin.getRole());
 
             if ("ADMIN".equalsIgnoreCase(admin.getRole())) {
