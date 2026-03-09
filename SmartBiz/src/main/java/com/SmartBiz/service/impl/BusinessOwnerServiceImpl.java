@@ -28,6 +28,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     private final SupplierRepository supplierRepository;
     private final CustomerRepository customerRepository;
     private final SaleItemRepository saleItemRepository;
+    private final SubscriptionPlanRepository subscriptionPlanRepository;
 
     @Override
     public InventoryDto addInventory(InventoryDto dto) {
@@ -474,6 +475,25 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         } catch (Exception e) {
             log.error("Failed to delete sale id {}: {}", saleId, e.getMessage(), e);
             throw new RuntimeException("Error during sale deletion: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void subscribeToPlan(Long businessId, Long planId) {
+        try {
+            Businesses business = businessRepository.findById(businessId)
+                    .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+
+            SubscriptionPlan plan = subscriptionPlanRepository.findById(planId)
+                    .orElseThrow(() -> new RuntimeException("Subscription plan not found with id: " + planId));
+
+            business.setSubscription(plan);
+            businessRepository.save(business);
+            log.info("Business id: {} subscribed to plan: {}", businessId, plan.getPlanName());
+        } catch (Exception e) {
+            log.error("Error subscribing business id {} to plan id {}: {}", businessId, planId, e.getMessage(), e);
+            throw new RuntimeException("Failed to subscribe to plan: " + e.getMessage());
         }
     }
 

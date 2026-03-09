@@ -17,7 +17,13 @@ public class AIRequestDto {
 
     private String response;
 
+    private String type;
+
     private Integer tokenUsed;
+
+    private String businessName;
+
+    private String businessOwnerName;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 }

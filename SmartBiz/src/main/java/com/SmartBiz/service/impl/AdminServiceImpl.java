@@ -200,7 +200,10 @@ public class AdminServiceImpl implements AdminService {
     @Transactional(readOnly = true)
     public List<AIRequestDto> getGlobalAiLogs() {
         try {
-            return aiRequestRepository.findAll().stream().map(this::mapToAiDto).collect(Collectors.toList());
+            return aiRequestRepository.findAll().stream()
+                    .filter(a -> a.getBusiness() != null)
+                    .map(this::mapToAiDto)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching AI logs: {}", e.getMessage(), e);
             return Collections.emptyList();
@@ -293,7 +296,14 @@ public class AdminServiceImpl implements AdminService {
         dto.setPrompt(a.getPrompt());
         dto.setResponse(a.getResponse());
         dto.setTokenUsed(a.getTokenUsed());
+        dto.setType(a.getType());
         dto.setCreatedAt(a.getCreatedAt());
+
+        if (a.getBusiness() != null) {
+            dto.setBusinessName(a.getBusiness().getName());
+            dto.setBusinessOwnerName(a.getBusiness().getBusinessOwnerName());
+        }
+
         return dto;
     }
 
@@ -302,6 +312,7 @@ public class AdminServiceImpl implements AdminService {
     public List<ActivityLogDto> getActivityLogs() {
         try {
             return activityLogRepository.findAllByOrderByTimestampDesc().stream()
+                    .filter(log -> log.getBusiness() != null)
                     .map(this::mapToActivityLogDto).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching activity logs: {}", e.getMessage(), e);
@@ -390,6 +401,7 @@ public class AdminServiceImpl implements AdminService {
         dto.setAiTokens(log.getAiTokens());
         if (log.getBusiness() != null) {
             dto.setBusinessName(log.getBusiness().getName());
+            dto.setBusinessOwnerName(log.getBusiness().getBusinessOwnerName());
         }
         return dto;
     }

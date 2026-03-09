@@ -93,4 +93,10 @@ public class BusinessOwnerController {
     public ResponseEntity<String> generateAiInsight(@PathVariable Long businessId, @RequestBody String prompt) {
         return new ResponseEntity<>(service.generateAiInsight(businessId, prompt), HttpStatus.OK);
     }
+
+    @PostMapping("/{businessId}/subscribe")
+    public ResponseEntity<Void> subscribeToPlan(@PathVariable Long businessId, @RequestParam Long planId) {
+        service.subscribeToPlan(businessId, planId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

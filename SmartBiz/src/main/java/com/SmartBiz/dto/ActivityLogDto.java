@@ -17,6 +17,8 @@ public class ActivityLogDto {
 
     private String businessName;
 
+    private String businessOwnerName;
+
     private String feature;
 
     private String action;
