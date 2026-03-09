@@ -390,6 +390,7 @@ public class AdminServiceImpl implements AdminService {
         dto.setAiTokens(log.getAiTokens());
         if (log.getBusiness() != null) {
             dto.setBusinessName(log.getBusiness().getName());
+            dto.setBusinessOwnerName(log.getBusiness().getBusinessOwnerName());
         }
         return dto;
     }
