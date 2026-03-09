@@ -39,4 +39,6 @@ public interface BusinessOwnerService {
     SalesDto getSaleById(Long businessId, Long saleId);
 
     void deleteSale(Long businessId, Long saleId);
+
+    void subscribeToPlan(Long businessId, Long planId);
 }
