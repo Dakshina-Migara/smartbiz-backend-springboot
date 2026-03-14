@@ -21,4 +21,6 @@ public interface SaleItemRepository extends JpaRepository<SaleItem, Long> {
             "GROUP BY i.product_id, i.product_name " +
             "ORDER BY total_qty DESC LIMIT 5", nativeQuery = true)
     List<Object[]> findTopSellingProducts(@Param("businessId") Long businessId);
+    @Query("SELECT COUNT(si) FROM SaleItem si WHERE si.product.productId = :productId")
+    long countByProductId(@Param("productId") Long productId);
 }
