@@ -284,6 +284,11 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                 throw new RuntimeException("Unauthorized: Business mismatch");
             }
 
+            // Check if there are any sale items referencing this product
+            if (saleItemRepository.countByProductId(productId) > 0) {
+                throw new RuntimeException("Cannot delete product because it has associated sales records. Please update its stock to 0 instead.");
+            }
+
             inventoryRepository.delete(inventory);
             log.info("Deleted product id: {} from business id: {}", productId, businessId);
         } catch (Exception e) {
