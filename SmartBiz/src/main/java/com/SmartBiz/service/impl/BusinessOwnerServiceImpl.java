@@ -29,6 +29,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     private final CustomerRepository customerRepository;
     private final SaleItemRepository saleItemRepository;
     private final SubscriptionPlanRepository subscriptionPlanRepository;
+    private final InvoiceRepository invoiceRepository;
 
     @Override
     public InventoryDto addInventory(InventoryDto dto) {
@@ -378,6 +379,19 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             customerRepository.save(customer);
 
             log.info("Mobile sale recorded: {} items, total: {}", totalQty, totalAmount);
+
+            // 5. Create an Invoice record for this sale so it shows up in the Invoices page
+            Invoice invoice = new Invoice();
+            invoice.setInvoiceNumber(savedSale.getInvoiceNumber());
+            invoice.setCustomerName(customer.getName());
+            invoice.setCustomerEmail(customer.getEmail());
+            invoice.setSale(savedSale);
+            invoice.setBusiness(business);
+            invoice.setIssuedDate(LocalDateTime.now());
+            invoice.setCreatedAt(LocalDateTime.now());
+            invoiceRepository.save(invoice);
+
+            log.info("Invoice created for sale: {}", savedSale.getInvoiceNumber());
 
             // Return FULL sale details including items for the invoice view
             return getSaleById(businessId, savedSale.getSaleId());
