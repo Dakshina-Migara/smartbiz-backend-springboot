@@ -78,6 +78,11 @@ public class MobileController {
         return new ResponseEntity<>(businessOwnerService.getSalesHistory(businessId), HttpStatus.OK);
     }
 
+    @GetMapping("/sales/{saleId}")
+    public ResponseEntity<com.SmartBiz.dto.SalesDto> getMobileSaleDetails(@PathVariable Long businessId, @PathVariable Long saleId) {
+        return new ResponseEntity<>(businessOwnerService.getSaleById(businessId, saleId), HttpStatus.OK);
+    }
+
     @GetMapping("/invoices")
     public ResponseEntity<List<com.SmartBiz.dto.InvoiceDto>> getMobileInvoices(@PathVariable Long businessId) {
         return new ResponseEntity<>(invoiceService.getAllInvoices(businessId), HttpStatus.OK);

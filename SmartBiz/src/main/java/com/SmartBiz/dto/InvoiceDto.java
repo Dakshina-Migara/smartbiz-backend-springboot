@@ -28,4 +28,7 @@ public class InvoiceDto {
 
     @NotNull(message = "Business ID is required")
     private Long businessId;
+
+    private Double totalAmount;
+    private String status;
 }
