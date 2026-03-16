@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,12 +69,60 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Transactional(readOnly = true)
     public List<InvoiceDto> getAllInvoices(Long businessId) {
         try {
-            return invoiceRepository.findByBusinessId(businessId)
-                    .stream().map(this::mapToDto).collect(Collectors.toList());
+            // 1. Get all actual invoices
+            List<Invoice> invoices = invoiceRepository.findByBusinessId(businessId);
+            List<InvoiceDto> invoiceDtos = invoices.stream()
+                    .map(this::mapToDto)
+                    .collect(Collectors.toList());
+
+            // 2. Get all sales to check for missing invoices
+            List<Sales> sales = salesRepository.findByBusinessIdOrderBySaleDateDesc(businessId);
+            
+            // Set of sale IDs that already have at least one invoice
+            Set<Long> saleIdsWithInvoices = invoices.stream()
+                    .map(i -> i.getSale().getSaleId())
+                    .collect(Collectors.toSet());
+
+            // 3. For any sale without an invoice, create a virtual/temporary InvoiceDto
+            for (Sales sale : sales) {
+                if (!saleIdsWithInvoices.contains(sale.getSaleId())) {
+                    invoiceDtos.add(mapSaleToInvoiceDto(sale, businessId));
+                }
+            }
+
+            // 4. Sort by date descending
+            invoiceDtos.sort((a, b) -> {
+                LocalDateTime dateA = a.getCreatedAt() != null ? a.getCreatedAt() : LocalDateTime.MIN;
+                LocalDateTime dateB = b.getCreatedAt() != null ? b.getCreatedAt() : LocalDateTime.MIN;
+                return dateB.compareTo(dateA);
+            });
+
+            return invoiceDtos;
         } catch (Exception e) {
             log.error("Error fetching invoices for business id {}: {}", businessId, e.getMessage(), e);
             return Collections.emptyList();
         }
+    }
+
+    private InvoiceDto mapSaleToInvoiceDto(Sales s, Long businessId) {
+        InvoiceDto dto = new InvoiceDto();
+        // Use a negative ID or some other scheme to indicate it's virtual if needed, 
+        // but simple mapping works for display.
+        dto.setInvoiceId(s.getSaleId()); // Use sale ID as fallback
+        dto.setInvoiceNumber(s.getInvoiceNumber());
+        if (s.getCustomer() != null) {
+            dto.setCustomerName(s.getCustomer().getName());
+            dto.setCustomerEmail(s.getCustomer().getEmail());
+        } else {
+            dto.setCustomerName("Walk-in Customer");
+        }
+        dto.setIssuedDate(s.getSaleDate());
+        dto.setCreatedAt(s.getSaleDate());
+        dto.setSaleId(s.getSaleId());
+        dto.setBusinessId(businessId);
+        dto.setTotalAmount(s.getTotalAmount());
+        dto.setStatus(s.getStatus());
+        return dto;
     }
 
     @Override
