@@ -104,6 +104,10 @@ public class InvoiceServiceImpl implements InvoiceService {
         dto.setCreatedAt(i.getCreatedAt());
         dto.setSaleId(i.getSale().getSaleId());
         dto.setBusinessId(i.getBusiness().getBusinessId());
+        if (i.getSale() != null) {
+            dto.setTotalAmount(i.getSale().getTotalAmount());
+            dto.setStatus(i.getSale().getStatus());
+        }
         return dto;
     }
 }
