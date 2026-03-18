@@ -2,6 +2,7 @@ package com.SmartBiz.controller;
 
 import com.SmartBiz.dto.LoginDto;
 import com.SmartBiz.dto.RegistrationDto;
+import com.SmartBiz.dto.ResetPasswordDto;
 import com.SmartBiz.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginDto dto) {
         return new ResponseEntity<>(authService.login(dto), HttpStatus.OK);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody ResetPasswordDto dto) {
+        return new ResponseEntity<>(authService.resetPassword(dto), HttpStatus.OK);
     }
 }

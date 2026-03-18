@@ -2,6 +2,7 @@ package com.SmartBiz.service.impl;
 
 import com.SmartBiz.dto.LoginDto;
 import com.SmartBiz.dto.RegistrationDto;
+import com.SmartBiz.dto.ResetPasswordDto;
 import com.SmartBiz.entity.Admin;
 import com.SmartBiz.entity.Businesses;
 import com.SmartBiz.exception.ResourceNotFoundException;
@@ -149,6 +150,32 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             log.error("Unexpected login error: {}", e.getMessage(), e);
             throw new RuntimeException("Login failed: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> resetPassword(ResetPasswordDto dto) {
+        try {
+            Admin admin = adminRepository.findByEmail(dto.getEmail())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + dto.getEmail()));
+
+            admin.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+            adminRepository.save(admin);
+
+            log.info("Password successfully updated in database for user: {}", dto.getEmail());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Password reset successful");
+            response.put("email", admin.getEmail());
+            return response;
+
+        } catch (ResourceNotFoundException e) {
+            log.error("Reset password error: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected reset password error: {}", e.getMessage(), e);
+            throw new RuntimeException("Password reset failed: " + e.getMessage());
         }
     }
 }
