@@ -4,6 +4,7 @@ import com.SmartBiz.dto.AiInsightRequestDto;
 import com.SmartBiz.dto.AiInsightResponseDto;
 import com.SmartBiz.entity.AiRequest;
 import com.SmartBiz.entity.Businesses;
+import com.SmartBiz.entity.SubscriptionPlan;
 import com.SmartBiz.repository.*;
 import com.SmartBiz.service.AiInsightService;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +31,30 @@ public class AiInsightServiceImpl implements AiInsightService {
     private final TransactionRepository transactionRepository;
     private final CustomerRepository customerRepository;
 
+    private void validateTokenLimit(Long businessId) {
+        Businesses business = businessRepository.findById(businessId)
+                .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+
+        SubscriptionPlan plan = business.getSubscription();
+        if (plan == null) {
+            throw new RuntimeException("No active subscription found for this business.");
+        }
+
+        Long usedTokens = aiRequestRepository.sumTokensByBusinessIdAndMonth(businessId);
+        if (usedTokens == null)
+            usedTokens = 0L;
+
+        if (usedTokens >= plan.getAiTokenLimit()) {
+            log.warn("Business {} has exceeded their AI token limit of {}", businessId, plan.getAiTokenLimit());
+            throw new RuntimeException("AI Token limit reached. Please upgrade your subscription plan.");
+        }
+    }
+
     @Override
     public AiInsightResponseDto generateInsight(AiInsightRequestDto request) {
         try {
+            validateTokenLimit(request.getBusinessId());
+
             Businesses business = businessRepository.findById(request.getBusinessId())
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + request.getBusinessId()));
 

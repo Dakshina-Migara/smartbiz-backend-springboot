@@ -34,6 +34,8 @@ public class BusinessesDto {
     private Double revenue;
 
     private Long aiUsage;
+    private Integer aiTokenLimit;
+    private Long aiUsageTotal;
 
     private LocalDateTime registeredDate;
 }

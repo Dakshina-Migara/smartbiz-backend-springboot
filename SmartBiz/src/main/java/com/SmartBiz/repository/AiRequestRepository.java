@@ -26,6 +26,16 @@ public interface AiRequestRepository extends JpaRepository<AiRequest, Long> {
         @Query("SELECT SUM(a.tokenUsed) FROM AiRequest a WHERE a.business.businessId = :businessId")
         Long sumTokensByBusinessId(@Param("businessId") Long businessId);
 
+        @Query("SELECT SUM(a.tokenUsed) FROM AiRequest a " +
+                        "WHERE a.business.businessId = :businessId " +
+                        "AND MONTH(a.createdAt) = MONTH(CURRENT_DATE) AND YEAR(a.createdAt) = YEAR(CURRENT_DATE)")
+        Long sumTokensByBusinessIdAndMonth(@Param("businessId") Long businessId);
+
+        @Query("SELECT a.business.businessId, SUM(a.tokenUsed) FROM AiRequest a " +
+                        "WHERE MONTH(a.createdAt) = MONTH(CURRENT_DATE) AND YEAR(a.createdAt) = YEAR(CURRENT_DATE) " +
+                        "GROUP BY a.business.businessId")
+        List<Object[]> sumTokensGroupedByBusinessThisMonth();
+
         @Query("SELECT a.business.businessId, SUM(a.tokenUsed) FROM AiRequest a GROUP BY a.business.businessId")
         List<Object[]> sumTokensGroupedByBusiness();
 
