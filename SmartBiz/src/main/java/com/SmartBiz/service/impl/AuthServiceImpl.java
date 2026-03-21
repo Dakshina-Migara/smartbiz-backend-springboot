@@ -82,6 +82,11 @@ public class AuthServiceImpl implements AuthService {
             response.put("tokenType", "Bearer");
             if (admin.getBusiness() != null) {
                 response.put("businessId", admin.getBusiness().getBusinessId());
+                if (admin.getBusiness().getSubscription() != null) {
+                    response.put("planName", admin.getBusiness().getSubscription().getPlanName());
+                } else {
+                    response.put("planName", "None");
+                }
             }
             response.put("adminId", admin.getAdminId());
             response.put("email", admin.getEmail());
@@ -139,6 +144,11 @@ public class AuthServiceImpl implements AuthService {
             if (admin.getBusiness() != null) {
                 response.put("businessId", admin.getBusiness().getBusinessId());
                 response.put("businessName", admin.getBusiness().getName());
+                if (admin.getBusiness().getSubscription() != null) {
+                    response.put("planName", admin.getBusiness().getSubscription().getPlanName());
+                } else {
+                    response.put("planName", "None");
+                }
             }
 
             log.info("User {} logged in as {}", admin.getEmail(), admin.getRole());

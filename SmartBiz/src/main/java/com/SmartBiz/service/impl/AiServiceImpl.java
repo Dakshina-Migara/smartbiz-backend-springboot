@@ -1,8 +1,13 @@
 package com.SmartBiz.service.impl;
 
+import com.SmartBiz.entity.AiRequest;
+import com.SmartBiz.entity.Businesses;
 import com.SmartBiz.entity.Inventory;
 import com.SmartBiz.entity.Invoice;
 import com.SmartBiz.entity.Sales;
+import com.SmartBiz.entity.SubscriptionPlan;
+import com.SmartBiz.repository.AiRequestRepository;
+import com.SmartBiz.repository.BusinessRepository;
 import com.SmartBiz.repository.InventoryRepository;
 import com.SmartBiz.repository.InvoiceRepository;
 import com.SmartBiz.repository.SalesRepository;
@@ -14,6 +19,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +32,51 @@ public class AiServiceImpl implements AiService {
         private final InventoryRepository inventoryRepository;
         private final SalesRepository salesRepository;
         private final InvoiceRepository invoiceRepository;
+        private final AiRequestRepository aiRequestRepository;
+        private final BusinessRepository businessRepository;
         private final ChatModel chatModel;
+
+        private void validateTokenLimit(Long businessId) {
+                Businesses business = businessRepository.findById(businessId)
+                                .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
+
+                SubscriptionPlan plan = business.getSubscription();
+                if (plan == null) {
+                        throw new RuntimeException("No active subscription found for this business.");
+                }
+
+                Long usedTokens = aiRequestRepository.sumTokensByBusinessIdAndMonth(businessId);
+                if (usedTokens == null)
+                        usedTokens = 0L;
+
+                if (usedTokens >= plan.getAiTokenLimit()) {
+                        log.warn("Business {} has exceeded their AI token limit of {}", businessId,
+                                        plan.getAiTokenLimit());
+                        throw new RuntimeException("AI Token limit reached. Please upgrade your subscription plan.");
+                }
+        }
+
+        private void saveAiRequest(Long businessId, String prompt, String response, String type) {
+                try {
+                        Businesses business = businessRepository.findById(businessId).orElse(null);
+                        if (business == null)
+                                return;
+
+                        int tokenEstimate = (prompt.length() + response.length()) / 4;
+
+                        AiRequest aiRequest = new AiRequest();
+                        aiRequest.setPrompt(prompt);
+                        aiRequest.setResponse(response);
+                        aiRequest.setType(type);
+                        aiRequest.setTokenUsed(tokenEstimate);
+                        aiRequest.setCreatedAt(LocalDateTime.now());
+                        aiRequest.setBusiness(business);
+
+                        aiRequestRepository.save(aiRequest);
+                } catch (Exception e) {
+                        log.error("Error saving AI request usage", e);
+                }
+        }
 
         @Override
         public String queryData(Long businessId, String prompt) {
@@ -45,42 +95,63 @@ public class AiServiceImpl implements AiService {
 
                 String systemContext = String.format(
                                 "You are SmartBiz AI, an assistant for small business owners. " +
-                                                "Current Business Snapshot: %d products in inventory, %d with low stock (below 5 units). " +
+                                                "Current Business Snapshot: %d products in inventory, %d with low stock (below 5 units). "
+                                                +
                                                 "Total revenue from %d transactions: $%.2f. " +
                                                 "Top Inventory Items: %s. " +
                                                 "Provide a professional and helpful insight based on the user's query.",
                                 inventory.size(), lowStockCount, sales.size(), totalRevenue, topItems);
 
+                validateTokenLimit(businessId);
                 log.info("AI query for business {}: {}", businessId, prompt);
                 try {
-                        return chatModel.call(systemContext + "\nUser Query: " + prompt);
+                        String fullPrompt = systemContext + "\nUser Query: " + prompt;
+                        String result = chatModel.call(fullPrompt);
+                        saveAiRequest(businessId, prompt, result, "query");
+                        return result;
                 } catch (Exception e) {
                         log.error("Error calling AI service", e);
+                        if (e.getMessage().contains("Token limit reached")) {
+                                throw e;
+                        }
                         return "I'm sorry, I'm having trouble connecting to the AI service right now. " +
-                                        "Summary: You have " + inventory.size() + " products and revenue of $" + totalRevenue;
+                                        "Summary: You have " + inventory.size() + " products and revenue of $"
+                                        + totalRevenue;
                 }
         }
 
         @Override
         public String generateEmail(Long businessId, String prompt) {
+                validateTokenLimit(businessId);
                 log.info("AI email generation for business {}: {}", businessId, prompt);
                 try {
                         String systemPrompt = "You are an expert business communicator. Generate a professional email based on the following request: ";
-                        return chatModel.call(systemPrompt + prompt);
+                        String result = chatModel.call(systemPrompt + prompt);
+                        saveAiRequest(businessId, prompt, result, "email");
+                        return result;
                 } catch (Exception e) {
                         log.error("Error generating AI email", e);
+                        if (e.getMessage().contains("Token limit reached")) {
+                                throw e;
+                        }
                         return "Failed to generate email via AI. Original request: " + prompt;
                 }
         }
 
         @Override
         public String generatePost(Long businessId, String prompt) {
+                validateTokenLimit(businessId);
                 log.info("AI social media post for business {}: {}", businessId, prompt);
                 try {
                         String systemPrompt = "You are a social media expert. Generate an engaging post with relevant emojis and hashtags based on: ";
-                        return chatModel.call(systemPrompt + prompt);
+                        String result = chatModel.call(systemPrompt + prompt);
+                        saveAiRequest(businessId, prompt, result, "marketing");
+                        return result;
                 } catch (Exception e) {
                         log.error("Error generating AI post", e);
+                        if (e.getMessage().contains("Token limit reached")) {
+                                throw e;
+                        }
                         return "Failed to generate social media post via AI. Original request: " + prompt;
                 }
         }
@@ -96,6 +167,7 @@ public class AiServiceImpl implements AiService {
                         throw new RuntimeException("Unauthorized: This invoice does not belong to your business");
                 }
 
+                validateTokenLimit(businessId);
                 log.info("AI invoice explanation for invoice {}", invoiceId);
                 try {
                         String itemsList = invoice.getSale().getSaleItems().stream()
@@ -109,10 +181,17 @@ public class AiServiceImpl implements AiService {
                                         itemsList);
 
                         String systemPrompt = "Explain this invoice clearly to a business owner, highlighting key details and any potential actions: ";
-                        return chatModel.call(systemPrompt + invoiceDetails);
+                        String result = chatModel.call(systemPrompt + invoiceDetails);
+                        saveAiRequest(businessId, "Explain invoice: " + invoice.getInvoiceNumber(), result,
+                                        "invoice_explanation");
+                        return result;
                 } catch (Exception e) {
                         log.error("Error explaining invoice via AI", e);
-                        return "Could not explain invoice via AI. Summary: Invoice #" + invoice.getInvoiceNumber() + " for "
+                        if (e.getMessage().contains("Token limit reached")) {
+                                throw e;
+                        }
+                        return "Could not explain invoice via AI. Summary: Invoice #" + invoice.getInvoiceNumber()
+                                        + " for "
                                         + invoice.getCustomerName() + " total: $" + invoice.getSale().getTotalAmount();
                 }
         }

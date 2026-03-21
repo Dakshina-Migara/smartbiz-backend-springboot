@@ -34,14 +34,20 @@ public class AdminServiceImpl implements AdminService {
             // 2. Fetch all admins (includes owners and system admins)
             List<Admin> allAdmins = adminRepository.findAll();
 
-            // 3. Bulk fetch AI usage
-            Map<Long, Long> aiUsageMap = aiRequestRepository.sumTokensGroupedByBusiness().stream()
+            // 3. Bulk fetch AI usage for current month
+            Map<Long, Long> monthlyAiUsageMap = aiRequestRepository.sumTokensGroupedByBusinessThisMonth().stream()
+                    .collect(Collectors.toMap(
+                            row -> (Long) row[0],
+                            row -> row[1] != null ? ((Number) row[1]).longValue() : 0L));
+
+            // 4. Bulk fetch total AI usage (optional but good for history)
+            Map<Long, Long> totalAiUsageMap = aiRequestRepository.sumTokensGroupedByBusiness().stream()
                     .collect(Collectors.toMap(
                             row -> (Long) row[0],
                             row -> row[1] != null ? ((Number) row[1]).longValue() : 0L));
 
             return allAdmins.stream()
-                    .map(admin -> mapFullAccount(admin, aiUsageMap))
+                    .map(admin -> mapFullAccount(admin, monthlyAiUsageMap, totalAiUsageMap))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching all accounts: {}", e.getMessage(), e);
@@ -55,15 +61,20 @@ public class AdminServiceImpl implements AdminService {
         try {
             List<Businesses> businesses = businessRepository.searchBusinesses(query);
 
-            Map<Long, Long> aiUsageMap = aiRequestRepository.sumTokensGroupedByBusiness().stream()
+            Map<Long, Long> monthlyAiUsageMap = aiRequestRepository.sumTokensGroupedByBusinessThisMonth().stream()
+                    .collect(Collectors.toMap(
+                            row -> (Long) row[0],
+                            row -> row[1] != null ? ((Number) row[1]).longValue() : 0L));
+
+            Map<Long, Long> totalAiUsageMap = aiRequestRepository.sumTokensGroupedByBusiness().stream()
                     .collect(Collectors.toMap(
                             row -> (Long) row[0],
                             row -> row[1] != null ? ((Number) row[1]).longValue() : 0L));
 
             return businesses.stream()
                     .filter(b -> b.getAdmins() != null && !b.getAdmins().isEmpty())
-                    .map(b -> mapFullAccount(b.getAdmins().get(0), aiUsageMap)) // Assuming 1-1 link for search results
-                                                                                // if possible or find admin
+                    .map(b -> mapFullAccount(b.getAdmins().get(0), monthlyAiUsageMap, totalAiUsageMap)) // Assuming 1-1 link for search results
+                                                                                 // if possible or find admin
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error searching businesses with query '{}': {}", query, e.getMessage(), e);
@@ -131,7 +142,7 @@ public class AdminServiceImpl implements AdminService {
             }
 
             log.info("Successfully updated account for adminId: {}", adminId);
-            return mapFullAccount(admin, null);
+            return mapFullAccount(admin, null, null);
         } catch (Exception e) {
             log.error("Error updating account id {}: {}", adminId, e.getMessage(), e);
             throw new RuntimeException("Failed to update account: " + e.getMessage());
@@ -355,7 +366,7 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    private BusinessesDto mapFullAccount(Admin admin, Map<Long, Long> aiUsageMap) {
+    private BusinessesDto mapFullAccount(Admin admin, Map<Long, Long> monthlyAiUsageMap, Map<Long, Long> totalAiUsageMap) {
         BusinessesDto dto = new BusinessesDto();
         dto.setAdminId(admin.getAdminId());
         dto.setRole(admin.getRole());
@@ -374,19 +385,28 @@ public class AdminServiceImpl implements AdminService {
             if (b.getSubscription() != null) {
                 dto.setPlanName(b.getSubscription().getPlanName());
                 dto.setRevenue(b.getSubscription().getPrice());
+                dto.setAiTokenLimit(b.getSubscription().getAiTokenLimit());
             }
 
-            if (aiUsageMap != null) {
-                dto.setAiUsage(aiUsageMap.getOrDefault(b.getBusinessId(), 0L));
+            if (monthlyAiUsageMap != null) {
+                dto.setAiUsage(monthlyAiUsageMap.getOrDefault(b.getBusinessId(), 0L));
+            } else {
+                Long usage = aiRequestRepository.sumTokensByBusinessIdAndMonth(b.getBusinessId());
+                dto.setAiUsage(usage != null ? usage : 0L);
+            }
+
+            if (totalAiUsageMap != null) {
+                dto.setAiUsageTotal(totalAiUsageMap.getOrDefault(b.getBusinessId(), 0L));
             } else {
                 Long usage = aiRequestRepository.sumTokensByBusinessId(b.getBusinessId());
-                dto.setAiUsage(usage != null ? usage : 0L);
+                dto.setAiUsageTotal(usage != null ? usage : 0L);
             }
         } else {
             dto.setName("N/A (System Admin)");
             dto.setStatus("active");
             dto.setRole("ADMIN");
             dto.setAiUsage(0L);
+            dto.setAiUsageTotal(0L);
             dto.setRevenue(0.0);
         }
         return dto;

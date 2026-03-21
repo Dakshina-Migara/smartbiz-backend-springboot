@@ -1,9 +1,7 @@
 package com.SmartBiz.service.impl;
 
-import com.SmartBiz.repository.CustomerRepository;
-import com.SmartBiz.repository.InventoryRepository;
-import com.SmartBiz.repository.PaymentRepository;
-import com.SmartBiz.repository.SalesRepository;
+import com.SmartBiz.entity.Businesses;
+import com.SmartBiz.repository.*;
 import com.SmartBiz.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +21,8 @@ public class DashboardServiceImpl implements DashboardService {
     private final InventoryRepository inventoryRepository;
     private final CustomerRepository customerRepository;
     private final PaymentRepository paymentRepository;
+    private final AiRequestRepository aiRequestRepository;
+    private final BusinessRepository businessRepository;
 
     @Override
     public Map<String, Object> getKPIs(Long businessId) {
@@ -53,6 +53,20 @@ public class DashboardServiceImpl implements DashboardService {
             kpis.put("totalCustomers", customerRepository.countByBusinessId(businessId));
             kpis.put("inventoryValue", inventoryRepository.calculateInventoryValue(businessId));
             kpis.put("totalProducts", inventoryRepository.countByBusinessId(businessId));
+
+            // 5. AI Token Usage (New)
+            Long aiTokensUsed = aiRequestRepository.sumTokensByBusinessIdAndMonth(businessId);
+            kpis.put("aiTokensUsedMonthly", aiTokensUsed != null ? aiTokensUsed : 0);
+
+            // Fetch plan limit
+            Businesses business = businessRepository.findById(businessId).orElse(null);
+            if (business != null && business.getSubscription() != null) {
+                kpis.put("aiTokenLimit", business.getSubscription().getAiTokenLimit());
+                kpis.put("planName", business.getSubscription().getPlanName());
+            } else {
+                kpis.put("aiTokenLimit", 0);
+                kpis.put("planName", "None");
+            }
 
             return kpis;
         } catch (Exception e) {
