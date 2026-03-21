@@ -79,6 +79,7 @@ public class AiServiceImpl implements AiService {
         }
 
         @Override
+        @Transactional
         public String queryData(Long businessId, String prompt) {
                 List<Inventory> inventory = inventoryRepository.findByBusinessId(businessId);
                 List<Sales> sales = salesRepository.findByBusinessIdOrderBySaleDateDesc(businessId);
@@ -121,6 +122,7 @@ public class AiServiceImpl implements AiService {
         }
 
         @Override
+        @Transactional
         public String generateEmail(Long businessId, String prompt) {
                 validateTokenLimit(businessId);
                 log.info("AI email generation for business {}: {}", businessId, prompt);
@@ -139,6 +141,7 @@ public class AiServiceImpl implements AiService {
         }
 
         @Override
+        @Transactional
         public String generatePost(Long businessId, String prompt) {
                 validateTokenLimit(businessId);
                 log.info("AI social media post for business {}: {}", businessId, prompt);
@@ -157,6 +160,7 @@ public class AiServiceImpl implements AiService {
         }
 
         @Override
+        @Transactional
         public String explainInvoice(Long businessId, Long invoiceId) {
                 Invoice invoice = invoiceRepository.findById(invoiceId)
                                 .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + invoiceId));
