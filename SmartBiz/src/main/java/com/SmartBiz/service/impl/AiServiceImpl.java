@@ -1,11 +1,13 @@
 package com.SmartBiz.service.impl;
 
+import com.SmartBiz.entity.ActivityLog;
 import com.SmartBiz.entity.AiRequest;
 import com.SmartBiz.entity.Businesses;
 import com.SmartBiz.entity.Inventory;
 import com.SmartBiz.entity.Invoice;
 import com.SmartBiz.entity.Sales;
 import com.SmartBiz.entity.SubscriptionPlan;
+import com.SmartBiz.repository.ActivityLogRepository;
 import com.SmartBiz.repository.AiRequestRepository;
 import com.SmartBiz.repository.BusinessRepository;
 import com.SmartBiz.repository.InventoryRepository;
@@ -34,6 +36,7 @@ public class AiServiceImpl implements AiService {
         private final InvoiceRepository invoiceRepository;
         private final AiRequestRepository aiRequestRepository;
         private final BusinessRepository businessRepository;
+        private final ActivityLogRepository activityLogRepository;
         private final ChatModel chatModel;
 
         private void validateTokenLimit(Long businessId) {
@@ -73,6 +76,16 @@ public class AiServiceImpl implements AiService {
                         aiRequest.setBusiness(business);
 
                         aiRequestRepository.save(aiRequest);
+
+                        // ALSO save to the general activity log
+                        ActivityLog activityLog = new ActivityLog();
+                        activityLog.setBusiness(business);
+                        activityLog.setFeature("AI Insight (" + type + ")");
+                        activityLog.setAction(prompt.length() > 50 ? prompt.substring(0, 47) + "..." : prompt);
+                        activityLog.setAiTokens(tokenEstimate);
+                        activityLog.setTimestamp(LocalDateTime.now());
+                        activityLogRepository.save(activityLog);
+
                 } catch (Exception e) {
                         log.error("Error saving AI request usage", e);
                 }
