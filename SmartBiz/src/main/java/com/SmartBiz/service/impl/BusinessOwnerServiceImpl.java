@@ -30,6 +30,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     private final SaleItemRepository saleItemRepository;
     private final SubscriptionPlanRepository subscriptionPlanRepository;
     private final InvoiceRepository invoiceRepository;
+    private final ActivityLogRepository activityLogRepository;
 
     @Override
     public InventoryDto addInventory(InventoryDto dto) {
@@ -55,6 +56,10 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
             Inventory saved = inventoryRepository.save(inventory);
             log.info("Added inventory product '{}' for business id: {}", dto.getProductName(), dto.getBusinessId());
+
+            // Log activity
+            saveActivityLog(business, "Inventory", "Added Product: " + dto.getProductName(), 0);
+
             return mapToInventoryDto(saved);
         } catch (Exception e) {
             log.error("Error adding inventory: {}", e.getMessage(), e);
@@ -129,6 +134,11 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             inventory.setStockLevel(quantity);
             Inventory updated = inventoryRepository.save(inventory);
             log.info("Updated stock for product id: {} to quantity: {}", productId, quantity);
+
+            // Log activity
+            saveActivityLog(inventory.getBusiness(), "Inventory",
+                    "Updated Stock: " + inventory.getProductName() + " to " + quantity, 0);
+
             return mapToInventoryDto(updated);
         } catch (Exception e) {
             log.error("Error updating stock for product id {}: {}", productId, e.getMessage(), e);
@@ -240,6 +250,10 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
             Sales savedSale = salesRepository.save(sale);
             log.info("Recorded sale for business id: {}, amount: {}", dto.getBusinessId(), dto.getTotalAmount());
+
+            // Log activity
+            saveActivityLog(business, "Sales", "Recorded Sale: $" + dto.getTotalAmount(), 0);
+
             return mapToSalesDto(savedSale);
         } catch (Exception e) {
             log.error("Error recording sale: {}", e.getMessage(), e);
@@ -392,6 +406,9 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
             invoiceRepository.save(invoice);
 
             log.info("Invoice created for sale: {}", savedSale.getInvoiceNumber());
+
+            // Log activity
+            saveActivityLog(business, "Sales", "Mobile Sale Recorded: $" + totalAmount, 0);
 
             // Return FULL sale details including items for the invoice view
             return getSaleById(businessId, savedSale.getSaleId());
@@ -546,6 +563,20 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
         }
 
         return dto;
+    }
+
+    private void saveActivityLog(Businesses business, String feature, String action, Integer aiTokens) {
+        try {
+            ActivityLog activityLog = new ActivityLog();
+            activityLog.setBusiness(business);
+            activityLog.setFeature(feature);
+            activityLog.setAction(action);
+            activityLog.setAiTokens(aiTokens != null ? aiTokens : 0);
+            activityLog.setTimestamp(LocalDateTime.now());
+            activityLogRepository.save(activityLog);
+        } catch (Exception e) {
+            log.error("Failed to save activity log: {}", e.getMessage());
+        }
     }
 
     private SalesDto mapToSalesDto(Sales sale) {
