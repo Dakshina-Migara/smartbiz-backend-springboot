@@ -1,11 +1,13 @@
 package com.SmartBiz.service.impl;
 
+import com.SmartBiz.entity.ActivityLog;
 import com.SmartBiz.entity.AiRequest;
 import com.SmartBiz.entity.Businesses;
 import com.SmartBiz.entity.Inventory;
 import com.SmartBiz.entity.Invoice;
 import com.SmartBiz.entity.Sales;
 import com.SmartBiz.entity.SubscriptionPlan;
+import com.SmartBiz.repository.ActivityLogRepository;
 import com.SmartBiz.repository.AiRequestRepository;
 import com.SmartBiz.repository.BusinessRepository;
 import com.SmartBiz.repository.InventoryRepository;
@@ -34,6 +36,7 @@ public class AiServiceImpl implements AiService {
         private final InvoiceRepository invoiceRepository;
         private final AiRequestRepository aiRequestRepository;
         private final BusinessRepository businessRepository;
+        private final ActivityLogRepository activityLogRepository;
         private final ChatModel chatModel;
 
         private void validateTokenLimit(Long businessId) {
@@ -73,12 +76,23 @@ public class AiServiceImpl implements AiService {
                         aiRequest.setBusiness(business);
 
                         aiRequestRepository.save(aiRequest);
+
+                        // ALSO save to the general activity log
+                        ActivityLog activityLog = new ActivityLog();
+                        activityLog.setBusiness(business);
+                        activityLog.setFeature("AI Insight (" + type + ")");
+                        activityLog.setAction(prompt.length() > 50 ? prompt.substring(0, 47) + "..." : prompt);
+                        activityLog.setAiTokens(tokenEstimate);
+                        activityLog.setTimestamp(LocalDateTime.now());
+                        activityLogRepository.save(activityLog);
+
                 } catch (Exception e) {
                         log.error("Error saving AI request usage", e);
                 }
         }
 
         @Override
+        @Transactional
         public String queryData(Long businessId, String prompt) {
                 List<Inventory> inventory = inventoryRepository.findByBusinessId(businessId);
                 List<Sales> sales = salesRepository.findByBusinessIdOrderBySaleDateDesc(businessId);
@@ -121,6 +135,7 @@ public class AiServiceImpl implements AiService {
         }
 
         @Override
+        @Transactional
         public String generateEmail(Long businessId, String prompt) {
                 validateTokenLimit(businessId);
                 log.info("AI email generation for business {}: {}", businessId, prompt);
@@ -139,6 +154,7 @@ public class AiServiceImpl implements AiService {
         }
 
         @Override
+        @Transactional
         public String generatePost(Long businessId, String prompt) {
                 validateTokenLimit(businessId);
                 log.info("AI social media post for business {}: {}", businessId, prompt);
@@ -157,6 +173,7 @@ public class AiServiceImpl implements AiService {
         }
 
         @Override
+        @Transactional
         public String explainInvoice(Long businessId, Long invoiceId) {
                 Invoice invoice = invoiceRepository.findById(invoiceId)
                                 .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + invoiceId));
