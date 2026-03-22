@@ -2,6 +2,7 @@ package com.SmartBiz.service.impl;
 
 import com.SmartBiz.dto.AiInsightRequestDto;
 import com.SmartBiz.dto.AiInsightResponseDto;
+import com.SmartBiz.entity.ActivityLog;
 import com.SmartBiz.entity.AiRequest;
 import com.SmartBiz.entity.Businesses;
 import com.SmartBiz.entity.SubscriptionPlan;
@@ -30,6 +31,7 @@ public class AiInsightServiceImpl implements AiInsightService {
     private final InventoryRepository inventoryRepository;
     private final TransactionRepository transactionRepository;
     private final CustomerRepository customerRepository;
+    private final ActivityLogRepository activityLogRepository;
 
     private void validateTokenLimit(Long businessId) {
         Businesses business = businessRepository.findById(businessId)
@@ -85,6 +87,10 @@ public class AiInsightServiceImpl implements AiInsightService {
 
             AiRequest saved = aiRequestRepository.save(aiRequest);
             log.info("Generated AI insight type '{}' for business id: {}", request.getType(), request.getBusinessId());
+
+            // ALSO save to the general activity log
+            saveToActivityLog(business, "AI Insight (" + request.getType() + ")", request.getPrompt(), tokenEstimate);
+
             return mapToDto(saved);
         } catch (Exception e) {
             log.error("Error generating AI insight: {}", e.getMessage(), e);
@@ -217,5 +223,19 @@ public class AiInsightServiceImpl implements AiInsightService {
         dto.setTokenUsed(request.getTokenUsed());
         dto.setCreatedAt(request.getCreatedAt());
         return dto;
+    }
+
+    private void saveToActivityLog(Businesses business, String feature, String prompt, int tokens) {
+        try {
+            ActivityLog log = new ActivityLog();
+            log.setBusiness(business);
+            log.setFeature(feature);
+            log.setAction(prompt.length() > 50 ? prompt.substring(0, 47) + "..." : prompt);
+            log.setAiTokens(tokens);
+            log.setTimestamp(LocalDateTime.now());
+            activityLogRepository.save(log);
+        } catch (Exception e) {
+            log.error("Failed to log AI activity: {}", e.getMessage());
+        }
     }
 }
