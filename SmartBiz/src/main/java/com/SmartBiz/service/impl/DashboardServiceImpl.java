@@ -20,7 +20,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final SalesRepository salesRepository;
     private final InventoryRepository inventoryRepository;
     private final CustomerRepository customerRepository;
-    private final PaymentRepository paymentRepository;
+    private final TransactionRepository transactionRepository;
     private final AiRequestRepository aiRequestRepository;
     private final BusinessRepository businessRepository;
 
@@ -29,16 +29,18 @@ public class DashboardServiceImpl implements DashboardService {
         try {
             Map<String, Object> kpis = new LinkedHashMap<>();
 
-            // 1. Optimized Revenue and Sales Count (One query instead of full list)
-            Double totalRevenue = salesRepository.sumTotalAmountByBusinessId(businessId);
+            // 1. Optimized Revenue and Sales Count
+            Double totalSales = salesRepository.sumTotalAmountByBusinessId(businessId);
+            Double otherIncome = transactionRepository.sumIncomeByBusinessId(businessId);
             Long salesCount = salesRepository.countByBusinessId(businessId);
-            double revenueVal = totalRevenue != null ? totalRevenue : 0.0;
+            
+            double revenueVal = (totalSales != null ? totalSales : 0.0) + (otherIncome != null ? otherIncome : 0.0);
 
             kpis.put("totalRevenue", revenueVal);
             kpis.put("salesCount", salesCount != null ? salesCount : 0);
 
-            // 2. Optimized Expenses (Already good)
-            Double totalExpenses = paymentRepository.sumAmountByBusinessId(businessId);
+            // 2. Optimized Expenses (Using transactions table)
+            Double totalExpenses = transactionRepository.sumExpensesByBusinessId(businessId);
             double expensesVal = totalExpenses != null ? totalExpenses : 0.0;
             kpis.put("totalExpenses", expensesVal);
 
@@ -48,13 +50,13 @@ public class DashboardServiceImpl implements DashboardService {
             kpis.put("netProfit", netProfit);
             kpis.put("profitMargin", Math.round(margin * 10.0) / 10.0);
 
-            // 4. Counts and Values (Optimized)
+            // 4. Counts and Values
             kpis.put("lowStockAlerts", inventoryRepository.countLowStock(businessId));
             kpis.put("totalCustomers", customerRepository.countByBusinessId(businessId));
             kpis.put("inventoryValue", inventoryRepository.calculateInventoryValue(businessId));
             kpis.put("totalProducts", inventoryRepository.countByBusinessId(businessId));
 
-            // 5. AI Token Usage (New)
+            // 5. AI Token Usage
             Long aiTokensUsed = aiRequestRepository.sumTokensByBusinessIdAndMonth(businessId);
             kpis.put("aiTokensUsedMonthly", aiTokensUsed != null ? aiTokensUsed : 0);
 
