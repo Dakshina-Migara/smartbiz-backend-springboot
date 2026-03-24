@@ -95,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
 
             if ("ADMIN".equalsIgnoreCase(admin.getRole())) {
                 response.put("accessibleArea", "ADMIN_PORTAL");
-                response.put("homePath", "/admin/dashboard");
+                response.put("homePath", "/admin/overview");
             } else {
                 response.put("accessibleArea", "BUSINESS_PORTAL");
                 response.put("homePath", "/owner/dashboard");
@@ -135,7 +135,7 @@ public class AuthServiceImpl implements AuthService {
 
             if ("ADMIN".equalsIgnoreCase(admin.getRole())) {
                 response.put("accessibleArea", "ADMIN_PORTAL");
-                response.put("homePath", "/admin/dashboard");
+                response.put("homePath", "/admin/overview");
             } else {
                 response.put("accessibleArea", "BUSINESS_PORTAL");
                 response.put("homePath", "/owner/dashboard");
