@@ -121,6 +121,12 @@ public class AuthServiceImpl implements AuthService {
             Admin admin = adminRepository.findByEmail(dto.getEmail())
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + dto.getEmail()));
 
+            // Restrict Mobile Login: Only Business Owners allowed
+            if ("ADMIN".equalsIgnoreCase(admin.getRole())) {
+                log.warn("Blocked mobile login attempt for admin: {}", admin.getEmail());
+                throw new RuntimeException("Access Denied: High-level administrators cannot access the mobile application.");
+            }
+
             String jwtToken = jwtService.generateToken(admin);
             log.info("Generated token for login: {}", jwtToken);
             Map<String, Object> response = new HashMap<>();
