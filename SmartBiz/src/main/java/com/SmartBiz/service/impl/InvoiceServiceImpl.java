@@ -11,6 +11,7 @@ import com.SmartBiz.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +33,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final SalesRepository salesRepository;
 
     @Override
-    public InvoiceDto createInvoice(Long businessId, InvoiceDto dto) {
+    public InvoiceDto createInvoice(@NonNull Long businessId, @NonNull InvoiceDto dto) {
         try {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
@@ -67,7 +68,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<InvoiceDto> getAllInvoices(Long businessId) {
+    public List<InvoiceDto> getAllInvoices(@NonNull Long businessId) {
         try {
             // 1. Get all actual invoices
             List<Invoice> invoices = invoiceRepository.findByBusinessId(businessId);
@@ -127,7 +128,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     @Transactional(readOnly = true)
-    public InvoiceDto getInvoiceById(Long businessId, Long invoiceId) {
+    public InvoiceDto getInvoiceById(@NonNull Long businessId, @NonNull Long invoiceId) {
         try {
             Invoice invoice = invoiceRepository.findById(invoiceId)
                     .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + invoiceId));

@@ -1,12 +1,13 @@
 package com.SmartBiz.service;
 
 import com.SmartBiz.dto.PaymentDto;
+import org.springframework.lang.NonNull;
 import java.util.List;
 
 public interface PaymentService {
-    PaymentDto recordPayment(Long businessId, PaymentDto dto);
+    PaymentDto recordPayment(@NonNull Long businessId, @NonNull PaymentDto dto);
 
-    List<PaymentDto> getPaymentsByBusiness(Long businessId);
+    List<PaymentDto> getPaymentsByBusiness(@NonNull Long businessId);
 
-    List<PaymentDto> getPaymentsBySale(Long saleId);
+    List<PaymentDto> getPaymentsBySale(@NonNull Long saleId);
 }
