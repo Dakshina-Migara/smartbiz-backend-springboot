@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,7 +94,7 @@ public class AiServiceImpl implements AiService {
 
         @Override
         @Transactional
-        public String queryData(Long businessId, String prompt) {
+        public String queryData(@NonNull Long businessId, @NonNull String prompt) {
                 List<Inventory> inventory = inventoryRepository.findByBusinessId(businessId);
                 List<Sales> sales = salesRepository.findByBusinessIdOrderBySaleDateDesc(businessId);
 
@@ -136,7 +137,7 @@ public class AiServiceImpl implements AiService {
 
         @Override
         @Transactional
-        public String generateEmail(Long businessId, String prompt) {
+        public String generateEmail(@NonNull Long businessId, @NonNull String prompt) {
                 validateTokenLimit(businessId);
                 log.info("AI email generation for business {}: {}", businessId, prompt);
                 try {
@@ -155,7 +156,7 @@ public class AiServiceImpl implements AiService {
 
         @Override
         @Transactional
-        public String generatePost(Long businessId, String prompt) {
+        public String generatePost(@NonNull Long businessId, @NonNull String prompt) {
                 validateTokenLimit(businessId);
                 log.info("AI social media post for business {}: {}", businessId, prompt);
                 try {
@@ -174,7 +175,7 @@ public class AiServiceImpl implements AiService {
 
         @Override
         @Transactional
-        public String explainInvoice(Long businessId, Long invoiceId) {
+        public String explainInvoice(@NonNull Long businessId, @NonNull Long invoiceId) {
                 Invoice invoice = invoiceRepository.findById(invoiceId)
                                 .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + invoiceId));
 

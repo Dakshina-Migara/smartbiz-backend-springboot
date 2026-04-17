@@ -11,6 +11,7 @@ import com.SmartBiz.service.AiInsightService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +54,7 @@ public class AiInsightServiceImpl implements AiInsightService {
     }
 
     @Override
-    public AiInsightResponseDto generateInsight(AiInsightRequestDto request) {
+    public AiInsightResponseDto generateInsight(@NonNull AiInsightRequestDto request) {
         try {
             validateTokenLimit(request.getBusinessId());
 
@@ -100,7 +101,7 @@ public class AiInsightServiceImpl implements AiInsightService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AiInsightResponseDto> getHistory(Long businessId) {
+    public List<AiInsightResponseDto> getHistory(@NonNull Long businessId) {
         try {
             return aiRequestRepository.findByBusinessId(businessId)
                     .stream().map(this::mapToDto).collect(Collectors.toList());
@@ -112,7 +113,7 @@ public class AiInsightServiceImpl implements AiInsightService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AiInsightResponseDto> getHistoryByType(Long businessId, String type) {
+    public List<AiInsightResponseDto> getHistoryByType(@NonNull Long businessId, @NonNull String type) {
         try {
             return aiRequestRepository.findByBusinessIdAndType(businessId, type.toLowerCase())
                     .stream().map(this::mapToDto).collect(Collectors.toList());
@@ -123,7 +124,7 @@ public class AiInsightServiceImpl implements AiInsightService {
     }
 
     @Override
-    public List<String> getQuickQuestions(String type) {
+    public List<String> getQuickQuestions(@NonNull String type) {
         if (type == null)
             return Collections.emptyList();
 

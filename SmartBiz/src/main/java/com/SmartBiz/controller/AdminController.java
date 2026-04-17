@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,25 +29,24 @@ public class AdminController {
     }
 
     @GetMapping("/businesses/search")
-    public ResponseEntity<List<BusinessesDto>> searchBusinesses(@RequestParam String q) {
+    public ResponseEntity<List<BusinessesDto>> searchBusinesses(@RequestParam @NonNull String q) {
         return new ResponseEntity<>(adminService.searchBusinesses(q), HttpStatus.OK);
     }
 
     @DeleteMapping("/businesses/{id}")
-    public ResponseEntity<Void> deleteBusiness(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBusiness(@PathVariable @NonNull Long id) {
         adminService.deleteBusiness(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/accounts/{adminId}")
-    public ResponseEntity<Void> deleteAccount(@PathVariable Long adminId) {
+    public ResponseEntity<Void> deleteAccount(@PathVariable @NonNull Long adminId) {
         adminService.deleteAccount(adminId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PutMapping("/accounts/{adminId}")
-    public ResponseEntity<BusinessesDto> updateAccount(@PathVariable Long adminId,
-            @Valid @RequestBody BusinessesDto dto) {
+    public ResponseEntity<BusinessesDto> updateAccount(@PathVariable @NonNull Long adminId, @Valid @RequestBody @NonNull BusinessesDto dto) {
         return new ResponseEntity<>(adminService.updateAccount(adminId, dto), HttpStatus.OK);
     }
 
@@ -66,18 +66,17 @@ public class AdminController {
     }
 
     @PostMapping("/subscriptions/create")
-    public ResponseEntity<SubscriptionPlanDto> createPlan(@Valid @RequestBody SubscriptionPlanDto planDto) {
+    public ResponseEntity<SubscriptionPlanDto> createPlan(@Valid @RequestBody @NonNull SubscriptionPlanDto planDto) {
         return new ResponseEntity<>(adminService.createSubscriptionPlan(planDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/subscriptions/{id}")
-    public ResponseEntity<SubscriptionPlanDto> updatePlan(@PathVariable Long id,
-            @Valid @RequestBody SubscriptionPlanDto planDto) {
+    public ResponseEntity<SubscriptionPlanDto> updatePlan(@PathVariable @NonNull Long id, @Valid @RequestBody @NonNull SubscriptionPlanDto planDto) {
         return new ResponseEntity<>(adminService.updateSubscriptionPlan(id, planDto), HttpStatus.OK);
     }
 
     @DeleteMapping("/subscriptions/{id}")
-    public ResponseEntity<Void> deletePlan(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePlan(@PathVariable @NonNull Long id) {
         adminService.deleteSubscriptionPlan(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
