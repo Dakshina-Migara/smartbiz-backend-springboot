@@ -4,6 +4,7 @@ import com.SmartBiz.entity.Supplier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,11 +13,11 @@ import java.util.List;
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
 
     @Query("SELECT s FROM Supplier s WHERE s.business.businessId = :businessId")
-    List<Supplier> findByBusinessId(@Param("businessId") Long businessId);
+    List<Supplier> findByBusinessId(@Param("businessId") @NonNull Long businessId);
 
     @Query("SELECT s FROM Supplier s WHERE s.business.businessId = :businessId " +
             "AND (LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR LOWER(s.company) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR LOWER(s.email) LIKE LOWER(CONCAT('%', :query, '%')))")
-    List<Supplier> searchByBusinessId(@Param("businessId") Long businessId, @Param("query") String query);
+    List<Supplier> searchByBusinessId(@Param("businessId") @NonNull Long businessId, @Param("query") @NonNull String query);
 }

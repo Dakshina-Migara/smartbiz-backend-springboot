@@ -8,6 +8,7 @@ import com.SmartBiz.service.BusinessOwnerService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +34,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     private final ActivityLogRepository activityLogRepository;
 
     @Override
-    public InventoryDto addInventory(InventoryDto dto) {
+    public InventoryDto addInventory(@NonNull InventoryDto dto) {
         try {
             Businesses business = businessRepository.findById(dto.getBusinessId())
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + dto.getBusinessId()));
@@ -69,7 +70,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<InventoryDto> getAllInventory(Long businessId) {
+    public List<InventoryDto> getAllInventory(@NonNull Long businessId) {
         try {
             return inventoryRepository.findByBusinessId(businessId)
                     .stream()
@@ -83,7 +84,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<InventoryDto> searchInventory(Long businessId, String query) {
+    public List<InventoryDto> searchInventory(@NonNull Long businessId, @NonNull String query) {
         try {
             return inventoryRepository.searchByBusinessId(businessId, query)
                     .stream()
@@ -97,7 +98,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<InventoryDto> filterInventoryByStatus(Long businessId, String status) {
+    public List<InventoryDto> filterInventoryByStatus(@NonNull Long businessId, @NonNull String status) {
         try {
             List<Inventory> items;
             switch (status.toLowerCase()) {
@@ -121,7 +122,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     }
 
     @Override
-    public InventoryDto updateStock(Long productId, Integer quantity, Long businessId) {
+    public InventoryDto updateStock(@NonNull Long productId, @NonNull Integer quantity, @NonNull Long businessId) {
         try {
             Inventory inventory = inventoryRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("Inventory not found with id: " + productId));
@@ -147,7 +148,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     }
 
     @Override
-    public InventoryDto adjustStock(Long productId, int adjustment, Long businessId) {
+    public InventoryDto adjustStock(@NonNull Long productId, int adjustment, @NonNull Long businessId) {
         try {
             Inventory inventory = inventoryRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
@@ -172,7 +173,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     }
 
     @Override
-    public InventoryDto updateProduct(Long productId, InventoryDto dto, Long businessId) {
+    public InventoryDto updateProduct(@NonNull Long productId, @NonNull InventoryDto dto, @NonNull Long businessId) {
         try {
             Inventory inventory = inventoryRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
@@ -208,7 +209,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional(readOnly = true)
-    public Map<String, Object> getInventoryStats(Long businessId) {
+    public Map<String, Object> getInventoryStats(@NonNull Long businessId) {
         try {
             Map<String, Object> stats = new LinkedHashMap<>();
             var items = inventoryRepository.findByBusinessId(businessId);
@@ -224,7 +225,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     }
 
     @Override
-    public SalesDto recordSale(SalesDto dto) {
+    public SalesDto recordSale(@NonNull SalesDto dto) {
         try {
             Businesses business = businessRepository.findById(dto.getBusinessId())
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + dto.getBusinessId()));
@@ -263,7 +264,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SalesDto> getSalesHistory(Long businessId) {
+    public List<SalesDto> getSalesHistory(@NonNull Long businessId) {
         try {
             return salesRepository.findByBusinessIdOrderBySaleDateDesc(businessId)
                     .stream()
@@ -277,7 +278,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SalesDto> searchSales(Long businessId, String query) {
+    public List<SalesDto> searchSales(@NonNull Long businessId, @NonNull String query) {
         try {
             return salesRepository.searchByBusinessId(businessId, query)
                     .stream()
@@ -290,7 +291,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     }
 
     @Override
-    public void deleteProduct(Long productId, Long businessId) {
+    public void deleteProduct(@NonNull Long productId, @NonNull Long businessId) {
         try {
             Inventory inventory = inventoryRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
@@ -313,7 +314,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
     }
 
     @Override
-    public SalesDto recordMobileSale(Long businessId, com.SmartBiz.dto.MobileSaleRequestDto dto) {
+    public SalesDto recordMobileSale(@NonNull Long businessId, @NonNull com.SmartBiz.dto.MobileSaleRequestDto dto) {
         try {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
@@ -433,7 +434,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional(readOnly = true)
-    public SalesDto getSaleById(Long businessId, Long saleId) {
+    public SalesDto getSaleById(@NonNull Long businessId, @NonNull Long saleId) {
         try {
             Sales sale = salesRepository.findById(saleId)
                     .orElseThrow(() -> new RuntimeException("Sale not found with id: " + saleId));
@@ -466,7 +467,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional
-    public void deleteSale(Long businessId, Long saleId) {
+    public void deleteSale(@NonNull Long businessId, @NonNull Long saleId) {
         try {
             Sales sale = salesRepository.findById(saleId)
                     .orElseThrow(() -> new RuntimeException("Sale not found with id: " + saleId));
@@ -516,7 +517,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional
-    public void subscribeToPlan(Long businessId, Long planId) {
+    public void subscribeToPlan(@NonNull Long businessId, @NonNull Long planId) {
         try {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));

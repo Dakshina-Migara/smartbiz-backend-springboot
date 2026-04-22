@@ -8,6 +8,7 @@ import com.SmartBiz.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,7 +58,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BusinessesDto> searchBusinesses(String query) {
+    public List<BusinessesDto> searchBusinesses(@NonNull String query) {
         try {
             List<Businesses> businesses = businessRepository.searchBusinesses(query);
 
@@ -84,7 +85,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public void deleteBusiness(Long businessId) {
+    public void deleteBusiness(@NonNull Long businessId) {
         try {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
@@ -99,13 +100,13 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public void deleteAccount(Long adminId) {
+    public void deleteAccount(@NonNull Long adminId) {
         try {
             Admin admin = adminRepository.findById(adminId)
                     .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + adminId));
 
             // If it's an owner, we should delete the business which will cascade to admin
-            if (admin.getBusiness() != null) {
+            if (admin.getBusiness() != null && admin.getBusiness().getBusinessId() != null) {
                 deleteBusiness(admin.getBusiness().getBusinessId());
             } else {
                 // It's a system admin
@@ -120,7 +121,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public BusinessesDto updateAccount(Long adminId, BusinessesDto dto) {
+    public BusinessesDto updateAccount(@NonNull Long adminId, @NonNull BusinessesDto dto) {
         try {
             Admin admin = adminRepository.findById(adminId)
                     .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + adminId));
@@ -150,7 +151,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public SubscriptionPlanDto createSubscriptionPlan(SubscriptionPlanDto planDto) {
+    public SubscriptionPlanDto createSubscriptionPlan(@NonNull SubscriptionPlanDto planDto) {
         try {
             SubscriptionPlan plan = new SubscriptionPlan();
             plan.setPlanName(planDto.getPlanName());
@@ -170,7 +171,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public SubscriptionPlanDto updateSubscriptionPlan(Long id, SubscriptionPlanDto planDto) {
+    public SubscriptionPlanDto updateSubscriptionPlan(@NonNull Long id, @NonNull SubscriptionPlanDto planDto) {
         try {
             SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Subscription plan not found with id: " + id));
@@ -344,7 +345,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public void deleteSubscriptionPlan(Long id) {
+    public void deleteSubscriptionPlan(@NonNull Long id) {
         try {
             SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Subscription plan not found with id: " + id));
@@ -356,7 +357,9 @@ public class AdminServiceImpl implements AdminService {
                 businessRepository.save(b);
             }
 
-            subscriptionPlanRepository.delete(plan);
+            if (plan != null) {
+                subscriptionPlanRepository.delete(plan);
+            }
             log.info("Deleted subscription plan id: {}", id);
         } catch (ResourceNotFoundException e) {
             throw e;

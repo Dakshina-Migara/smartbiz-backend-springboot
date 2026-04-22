@@ -9,6 +9,7 @@ import com.SmartBiz.service.SupplierService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ public class SupplierServiceImpl implements SupplierService {
     private final BusinessRepository businessRepository;
 
     @Override
-    public SupplierDto addSupplier(Long businessId, SupplierDto dto) {
+    public SupplierDto addSupplier(@NonNull Long businessId, @NonNull SupplierDto dto) {
         try {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
@@ -50,7 +51,7 @@ public class SupplierServiceImpl implements SupplierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SupplierDto> getAllSuppliers(Long businessId) {
+    public List<SupplierDto> getAllSuppliers(@NonNull Long businessId) {
         try {
             return supplierRepository.findByBusinessId(businessId)
                     .stream().map(this::mapToDto).collect(Collectors.toList());
@@ -62,7 +63,7 @@ public class SupplierServiceImpl implements SupplierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SupplierDto> searchSuppliers(Long businessId, String query) {
+    public List<SupplierDto> searchSuppliers(@NonNull Long businessId, @NonNull String query) {
         try {
             return supplierRepository.searchByBusinessId(businessId, query)
                     .stream().map(this::mapToDto).collect(Collectors.toList());
@@ -73,7 +74,7 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    public SupplierDto updateSupplier(Long businessId, Long supplierId, SupplierDto dto) {
+    public SupplierDto updateSupplier(@NonNull Long businessId, @NonNull Long supplierId, @NonNull SupplierDto dto) {
         try {
             Supplier supplier = supplierRepository.findById(supplierId)
                     .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
@@ -98,7 +99,7 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    public void deleteSupplier(Long businessId, Long supplierId) {
+    public void deleteSupplier(@NonNull Long businessId, @NonNull Long supplierId) {
         try {
             Supplier supplier = supplierRepository.findById(supplierId)
                     .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
