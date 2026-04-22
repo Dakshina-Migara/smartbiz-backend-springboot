@@ -1,16 +1,17 @@
 package com.SmartBiz.service;
 
 import com.SmartBiz.dto.CustomerDto;
+import org.springframework.lang.NonNull;
 import java.util.List;
 
 public interface CustomerService {
-    CustomerDto addCustomer(Long businessId, CustomerDto dto);
+    CustomerDto addCustomer(@NonNull Long businessId, @NonNull CustomerDto dto);
 
-    List<CustomerDto> getAllCustomers(Long businessId);
+    List<CustomerDto> getAllCustomers(@NonNull Long businessId);
 
-    List<CustomerDto> searchCustomers(Long businessId, String query);
+    List<CustomerDto> searchCustomers(@NonNull Long businessId, @NonNull String query);
 
-    CustomerDto updateCustomer(Long businessId, Long customerId, CustomerDto dto);
+    CustomerDto updateCustomer(@NonNull Long businessId, @NonNull Long customerId, @NonNull CustomerDto dto);
 
-    void deleteCustomer(Long businessId, Long customerId);
+    void deleteCustomer(@NonNull Long businessId, @NonNull Long customerId);
 }

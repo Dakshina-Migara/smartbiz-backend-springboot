@@ -11,6 +11,7 @@ import com.SmartBiz.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +29,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final SalesRepository salesRepository;
 
     @Override
-    public PaymentDto recordPayment(Long businessId, PaymentDto dto) {
+    public PaymentDto recordPayment(@NonNull Long businessId, @NonNull PaymentDto dto) {
         try {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
@@ -53,7 +54,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PaymentDto> getPaymentsByBusiness(Long businessId) {
+    public List<PaymentDto> getPaymentsByBusiness(@NonNull Long businessId) {
         try {
             return paymentRepository.findByBusinessId(businessId)
                     .stream().map(this::mapToDto).collect(Collectors.toList());
@@ -65,7 +66,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PaymentDto> getPaymentsBySale(Long saleId) {
+    public List<PaymentDto> getPaymentsBySale(@NonNull Long saleId) {
         try {
             return paymentRepository.findBySaleId(saleId)
                     .stream().map(this::mapToDto).collect(Collectors.toList());

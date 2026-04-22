@@ -9,6 +9,7 @@ import com.SmartBiz.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final BusinessRepository businessRepository;
 
     @Override
-    public TransactionDto addTransaction(Long businessId, TransactionDto dto) {
+    public TransactionDto addTransaction(@NonNull Long businessId, @NonNull TransactionDto dto) {
         try {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
@@ -51,7 +52,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TransactionDto> getAllTransactions(Long businessId) {
+    public List<TransactionDto> getAllTransactions(@NonNull Long businessId) {
         try {
             return transactionRepository.findByBusinessId(businessId)
                     .stream().map(this::mapToDto).collect(Collectors.toList());
@@ -63,7 +64,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TransactionDto> searchTransactions(Long businessId, String query) {
+    public List<TransactionDto> searchTransactions(@NonNull Long businessId, @NonNull String query) {
         try {
             return transactionRepository.searchByBusinessId(businessId, query)
                     .stream().map(this::mapToDto).collect(Collectors.toList());
@@ -75,7 +76,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TransactionDto> filterByType(Long businessId, String type) {
+    public List<TransactionDto> filterByType(@NonNull Long businessId, @NonNull String type) {
         try {
             return transactionRepository.findByBusinessIdAndType(businessId, type.toLowerCase())
                     .stream().map(this::mapToDto).collect(Collectors.toList());
@@ -86,7 +87,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public TransactionDto updateTransaction(Long businessId, Long transactionId, TransactionDto dto) {
+    public TransactionDto updateTransaction(@NonNull Long businessId, @NonNull Long transactionId, @NonNull TransactionDto dto) {
         try {
             Transaction transaction = transactionRepository.findById(transactionId)
                     .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + transactionId));
@@ -113,7 +114,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public void deleteTransaction(Long businessId, Long transactionId) {
+    public void deleteTransaction(@NonNull Long businessId, @NonNull Long transactionId) {
         try {
             Transaction transaction = transactionRepository.findById(transactionId)
                     .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + transactionId));
@@ -132,7 +133,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional(readOnly = true)
-    public Map<String, Object> getTransactionSummary(Long businessId) {
+    public Map<String, Object> getTransactionSummary(@NonNull Long businessId) {
         try {
             Map<String, Object> summary = new LinkedHashMap<>();
             Double income = transactionRepository.sumIncomeByBusinessId(businessId);

@@ -1,12 +1,13 @@
 package com.SmartBiz.service;
 
 import com.SmartBiz.dto.InvoiceDto;
+import org.springframework.lang.NonNull;
 import java.util.List;
 
 public interface InvoiceService {
-    InvoiceDto createInvoice(Long businessId, InvoiceDto dto);
+    InvoiceDto createInvoice(@NonNull Long businessId, @NonNull InvoiceDto dto);
 
-    List<InvoiceDto> getAllInvoices(Long businessId);
+    List<InvoiceDto> getAllInvoices(@NonNull Long businessId);
 
-    InvoiceDto getInvoiceById(Long businessId, Long invoiceId);
+    InvoiceDto getInvoiceById(@NonNull Long businessId, @NonNull Long invoiceId);
 }

@@ -9,6 +9,7 @@ import com.SmartBiz.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final BusinessRepository businessRepository;
 
     @Override
-    public CustomerDto addCustomer(Long businessId, CustomerDto dto) {
+    public CustomerDto addCustomer(@NonNull Long businessId, @NonNull CustomerDto dto) {
         try {
             Businesses business = businessRepository.findById(businessId)
                     .orElseThrow(() -> new RuntimeException("Business not found with id: " + businessId));
@@ -49,7 +50,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CustomerDto> getAllCustomers(Long businessId) {
+    public List<CustomerDto> getAllCustomers(@NonNull Long businessId) {
         try {
             return customerRepository.findByBusinessId(businessId)
                     .stream().map(this::mapToDto).collect(Collectors.toList());
@@ -61,7 +62,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CustomerDto> searchCustomers(Long businessId, String query) {
+    public List<CustomerDto> searchCustomers(@NonNull Long businessId, @NonNull String query) {
         try {
             return customerRepository.searchByBusinessId(businessId, query)
                     .stream().map(this::mapToDto).collect(Collectors.toList());
@@ -72,7 +73,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerDto updateCustomer(Long businessId, Long customerId, CustomerDto dto) {
+    public CustomerDto updateCustomer(@NonNull Long businessId, @NonNull Long customerId, @NonNull CustomerDto dto) {
         try {
             Customer customer = customerRepository.findById(customerId)
                     .orElseThrow(() -> new RuntimeException("Customer not found with id: " + customerId));
@@ -99,7 +100,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void deleteCustomer(Long businessId, Long customerId) {
+    public void deleteCustomer(@NonNull Long businessId, @NonNull Long customerId) {
         try {
             Customer customer = customerRepository.findById(customerId)
                     .orElseThrow(() -> new RuntimeException("Customer not found with id: " + customerId));

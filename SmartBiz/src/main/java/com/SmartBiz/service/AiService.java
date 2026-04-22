@@ -1,11 +1,13 @@
 package com.SmartBiz.service;
 
+import org.springframework.lang.NonNull;
+
 public interface AiService {
-    String queryData(Long businessId, String prompt);
+    String queryData(@NonNull Long businessId, @NonNull String prompt);
 
-    String generateEmail(Long businessId, String prompt);
+    String generateEmail(@NonNull Long businessId, @NonNull String prompt);
 
-    String generatePost(Long businessId, String prompt);
+    String generatePost(@NonNull Long businessId, @NonNull String prompt);
 
-    String explainInvoice(Long businessId, Long invoiceId);
+    String explainInvoice(@NonNull Long businessId, @NonNull Long invoiceId);
 }
