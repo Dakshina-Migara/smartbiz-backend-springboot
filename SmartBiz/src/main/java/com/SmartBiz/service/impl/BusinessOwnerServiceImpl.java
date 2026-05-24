@@ -5,6 +5,7 @@ import com.SmartBiz.dto.SalesDto;
 import com.SmartBiz.entity.*;
 import com.SmartBiz.repository.*;
 import com.SmartBiz.service.BusinessOwnerService;
+import com.SmartBiz.exception.BusinessRuleException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -302,11 +303,14 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
             // Check if there are any sale items referencing this product
             if (saleItemRepository.countByProductId(productId) > 0) {
-                throw new RuntimeException("Cannot delete product because it has associated sales records. Please update its stock to 0 instead.");
+                throw new BusinessRuleException("Cannot delete product because it has associated sales records. Please update its stock to 0 instead.");
             }
 
             inventoryRepository.delete(inventory);
             log.info("Deleted product id: {} from business id: {}", productId, businessId);
+        } catch (BusinessRuleException e) {
+            log.warn("Business rule violation in deleteProduct: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting product id {}: {}", productId, e.getMessage(), e);
             throw new RuntimeException("Failed to delete product: " + e.getMessage());
