@@ -70,19 +70,23 @@ public class TransactionServiceImpl implements TransactionService {
                     .stream().map(this::mapToDto).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error searching transactions for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to search transactions: " + e.getMessage());
         }
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TransactionDto> filterByType(@NonNull Long businessId, @NonNull String type) {
+        String normalizedType = type.toLowerCase();
+        if (!normalizedType.equals("income") && !normalizedType.equals("expense")) {
+            throw new RuntimeException("Invalid transaction type '" + type + "'. Must be 'income' or 'expense'.");
+        }
         try {
-            return transactionRepository.findByBusinessIdAndType(businessId, type.toLowerCase())
+            return transactionRepository.findByBusinessIdAndType(businessId, normalizedType)
                     .stream().map(this::mapToDto).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error filtering transactions for business id {}: {}", businessId, e.getMessage(), e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to filter transactions: " + e.getMessage());
         }
     }
 

@@ -421,7 +421,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional(readOnly = true)
-    public String generateAiInsight(Long businessId, String prompt) {
+    public String generateAiInsight(@NonNull Long businessId, @NonNull String prompt) {
         try {
             List<Inventory> inventoryList = inventoryRepository.findByBusinessId(businessId);
             long lowStockCount = inventoryList.stream().filter(i -> i.getStockLevel() < 5).count();
@@ -486,12 +486,18 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                     }
                 }
 
-                // Apply grouped stock updates
+                // Apply grouped stock updates (only for products belonging to this business)
                 for (Map.Entry<Long, Integer> entry : productRestorations.entrySet()) {
                     inventoryRepository.findById(entry.getKey()).ifPresent(product -> {
-                        int currentStock = product.getStockLevel() != null ? product.getStockLevel() : 0;
-                        product.setStockLevel(currentStock + entry.getValue());
-                        inventoryRepository.save(product);
+                        if (product.getBusiness() != null &&
+                                product.getBusiness().getBusinessId().equals(businessId)) {
+                            int currentStock = product.getStockLevel() != null ? product.getStockLevel() : 0;
+                            product.setStockLevel(currentStock + entry.getValue());
+                            inventoryRepository.save(product);
+                        } else {
+                            log.warn("Skipped stock restoration for product id {} — does not belong to business id {}",
+                                    entry.getKey(), businessId);
+                        }
                     });
                 }
             }
