@@ -5,6 +5,7 @@ import com.SmartBiz.dto.SalesDto;
 import com.SmartBiz.entity.*;
 import com.SmartBiz.repository.*;
 import com.SmartBiz.service.BusinessOwnerService;
+import com.SmartBiz.exception.BusinessRuleException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -302,11 +303,14 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
             // Check if there are any sale items referencing this product
             if (saleItemRepository.countByProductId(productId) > 0) {
-                throw new RuntimeException("Cannot delete product because it has associated sales records. Please update its stock to 0 instead.");
+                throw new BusinessRuleException("Cannot delete product because it has associated sales records. Please update its stock to 0 instead.");
             }
 
             inventoryRepository.delete(inventory);
             log.info("Deleted product id: {} from business id: {}", productId, businessId);
+        } catch (BusinessRuleException e) {
+            log.warn("Business rule violation in deleteProduct: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting product id {}: {}", productId, e.getMessage(), e);
             throw new RuntimeException("Failed to delete product: " + e.getMessage());
@@ -421,7 +425,7 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
 
     @Override
     @Transactional(readOnly = true)
-    public String generateAiInsight(Long businessId, String prompt) {
+    public String generateAiInsight(@NonNull Long businessId, @NonNull String prompt) {
         try {
             List<Inventory> inventoryList = inventoryRepository.findByBusinessId(businessId);
             long lowStockCount = inventoryList.stream().filter(i -> i.getStockLevel() < 5).count();
@@ -486,12 +490,18 @@ public class BusinessOwnerServiceImpl implements BusinessOwnerService {
                     }
                 }
 
-                // Apply grouped stock updates
+                // Apply grouped stock updates (only for products belonging to this business)
                 for (Map.Entry<Long, Integer> entry : productRestorations.entrySet()) {
                     inventoryRepository.findById(entry.getKey()).ifPresent(product -> {
-                        int currentStock = product.getStockLevel() != null ? product.getStockLevel() : 0;
-                        product.setStockLevel(currentStock + entry.getValue());
-                        inventoryRepository.save(product);
+                        if (product.getBusiness() != null &&
+                                product.getBusiness().getBusinessId().equals(businessId)) {
+                            int currentStock = product.getStockLevel() != null ? product.getStockLevel() : 0;
+                            product.setStockLevel(currentStock + entry.getValue());
+                            inventoryRepository.save(product);
+                        } else {
+                            log.warn("Skipped stock restoration for product id {} — does not belong to business id {}",
+                                    entry.getKey(), businessId);
+                        }
                     });
                 }
             }
