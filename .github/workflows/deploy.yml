@@ -4,7 +4,7 @@ name: Deploy SmartBiz Backend to AWS
 on:
   push:
     branches:
-      - main
+      - feat-new
 
 jobs:
   build-and-deploy:
@@ -24,7 +24,7 @@ jobs:
 
       # 3. GitHub builds your heavy .war file
       - name: Build with Maven
-        run: mvn clean package -DskipTests
+        run: cd SmartBiz && mvn clean package -DskipTests
 
       # 4. GitHub securely transfers the file to your AWS server using your Secrets
       - name: Copy file to AWS
@@ -33,7 +33,7 @@ jobs:
           host: ${{ secrets.AWS_HOST }}
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_PRIVATE_KEY }}
-          source: "target/SmartBiz-0.0.1-SNAPSHOT.war"
+          source: "SmartBiz/target/SmartBiz-0.0.1-SNAPSHOT.war"
           target: "/home/ubuntu/"
 
       # 5. GitHub logs into AWS, renames the file, moves it, and restarts the engine
